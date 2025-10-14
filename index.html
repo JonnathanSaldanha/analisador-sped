@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analisador SPED-EFD</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --success-color: #27ae60;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 30px 0;
+            text-align: center;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            padding: 25px;
+            margin-bottom: 25px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+        }
+        
+        .card-title {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--light-color);
+            padding-bottom: 10px;
+        }
+        
+        .upload-area {
+            border: 3px dashed #bdc3c7;
+            border-radius: 10px;
+            padding: 40px 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: #fafbfc;
+        }
+        
+        .upload-area:hover, .upload-area.dragover {
+            border-color: var(--secondary-color);
+            background-color: #e8f4fd;
+        }
+        
+        .upload-icon {
+            font-size: 48px;
+            color: var(--secondary-color);
+            margin-bottom: 15px;
+        }
+        
+        .btn {
+            display: inline-block;
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+        }
+        
+        .btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-success {
+            background: var(--success-color);
+        }
+        
+        .btn-success:hover {
+            background: #219653;
+        }
+        
+        .btn-danger {
+            background: var(--accent-color);
+        }
+        
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        
+        .file-info {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: var(--light-color);
+            border-radius: 5px;
+        }
+        
+        .file-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: white;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            border-left: 4px solid var(--secondary-color);
+        }
+        
+        .file-item.error {
+            border-left-color: var(--accent-color);
+            background-color: #fde8e8;
+        }
+        
+        .file-item.success {
+            border-left-color: var(--success-color);
+            background-color: #e8f8ef;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--secondary-color);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px 15px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        tr:hover {
+            background-color: #e9f7fe;
+        }
+        
+        .results-section {
+            display: none;
+        }
+        
+        .summary-card {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .summary-item {
+            flex: 1;
+            min-width: 200px;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+        
+        .summary-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--secondary-color);
+            margin: 10px 0;
+        }
+        
+        .summary-label {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
+        .error {
+            color: var(--accent-color);
+            background-color: #fde8e8;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            display: none;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 1rem;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .tab.active {
+            border-bottom-color: var(--secondary-color);
+            color: var(--secondary-color);
+            font-weight: 600;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .debug-info {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+            
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab {
+                text-align: left;
+                border-bottom: 1px solid #e0e0e0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Analisador SPED-EFD</h1>
+            <p class="subtitle">Analise vários arquivos SPED-EFD, identifique registros C190 e exporte para Excel</p>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="card">
+            <h2 class="card-title">Carregar Arquivos</h2>
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📁</div>
+                <p>Clique aqui ou arraste múltiplos arquivos SPED-EFD para análise</p>
+                <p><small>Arquivos aceitos: .txt (múltipla seleção permitida)</small></p>
+                <input type="file" id="fileInput" accept=".txt" multiple style="display: none;">
+            </div>
+            
+            <div class="file-info">
+                <p><strong>Arquivos carregados:</strong> <span id="fileCount">0</span></p>
+                <div class="file-list" id="fileList"></div>
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn btn-success" id="processBtn" disabled>Processar Arquivos</button>
+                <button class="btn btn-danger" id="clearBtn">Limpar Arquivos</button>
+            </div>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Processando arquivos...</p>
+            </div>
+            
+            <div class="error" id="error"></div>
+            
+            <div class="debug-info" id="debugInfo">
+                <strong>Informações de Debug:</strong>
+                <div id="debugContent"></div>
+            </div>
+        </div>
+        
+        <div class="results-section" id="resultsSection">
+            <div class="card">
+                <h2 class="card-title">Resumo da Análise</h2>
+                <div class="summary-card">
+                    <div class="summary-item">
+                        <div class="summary-label">Arquivos Processados</div>
+                        <div class="summary-value" id="processedFiles">0</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">Registros C190 Encontrados</div>
+                        <div class="summary-value" id="c190Count">0</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">Valor Total</div>
+                        <div class="summary-value" id="totalValue">R$ 0,00</div>
+                    </div>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn btn-success" id="exportBtn">Exportar para Excel</button>
+                    <button class="btn btn-danger" id="resetBtn">Nova Análise</button>
+                    <button class="btn" id="debugToggle">Mostrar Debug</button>
+                </div>
+            </div>
+            
+            <div class="tabs">
+                <button class="tab active" data-tab="summary">Resumo por Mês/Ano</button>
+                <button class="tab" data-tab="details">Todos os Registros C190</button>
+                <button class="tab" data-tab="files">Detalhes por Arquivo</button>
+            </div>
+            
+            <div class="tab-content active" id="summaryTab">
+                <div class="card">
+                    <h2 class="card-title">Detalhes por Mês e Ano</h2>
+                    <table id="resultsTable">
+                        <thead>
+                            <tr>
+                                <th>Mês/Ano</th>
+                                <th>Arquivos</th>
+                                <th>Registros C190</th>
+                                <th>Valor Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="detailsTab">
+                <div class="card">
+                    <h2 class="card-title">Todos os Registros C190</h2>
+                    <table id="c190Table">
+                        <thead>
+                            <tr>
+                                <th>Arquivo</th>
+                                <th>Mês/Ano</th>
+                                <th>CST</th>
+                                <th>CFOP</th>
+                                <th>Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody id="c190TableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="filesTab">
+                <div class="card">
+                    <h2 class="card-title">Detalhes por Arquivo</h2>
+                    <table id="filesTable">
+                        <thead>
+                            <tr>
+                                <th>Arquivo</th>
+                                <th>Período</th>
+                                <th>Mês/Ano</th>
+                                <th>Registros C190</th>
+                                <th>Valor Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="filesTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <p>Analisador SPED-EFD &copy; 2023 - Desenvolvido para processamento de múltiplos arquivos fiscais</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileInput = document.getElementById('fileInput');
+            const uploadArea = document.getElementById('uploadArea');
+            const fileCount = document.getElementById('fileCount');
+            const fileList = document.getElementById('fileList');
+            const processBtn = document.getElementById('processBtn');
+            const clearBtn = document.getElementById('clearBtn');
+            const resultsSection = document.getElementById('resultsSection');
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            const exportBtn = document.getElementById('exportBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const debugToggle = document.getElementById('debugToggle');
+            const debugInfo = document.getElementById('debugInfo');
+            const debugContent = document.getElementById('debugContent');
+            
+            // Elementos de resumo
+            const processedFiles = document.getElementById('processedFiles');
+            const c190Count = document.getElementById('c190Count');
+            const totalValue = document.getElementById('totalValue');
+            
+            // Tabelas
+            const resultsTableBody = document.getElementById('resultsTableBody');
+            const c190TableBody = document.getElementById('c190TableBody');
+            const filesTableBody = document.getElementById('filesTableBody');
+            
+            // Tabs
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            let filesData = [];
+            let analysisData = null;
+            let debugMode = false;
+            
+            // Eventos para upload de arquivo
+            uploadArea.addEventListener('click', function() {
+                fileInput.click();
+            });
+            
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            
+            uploadArea.addEventListener('dragleave', function() {
+                uploadArea.classList.remove('dragover');
+            });
+            
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                
+                if (e.dataTransfer.files.length) {
+                    handleFiles(e.dataTransfer.files);
+                }
+            });
+            
+            fileInput.addEventListener('change', function() {
+                if (fileInput.files.length) {
+                    handleFiles(fileInput.files);
+                }
+            });
+            
+            // Evento para processar arquivos
+            processBtn.addEventListener('click', function() {
+                processFiles();
+            });
+            
+            // Evento para limpar arquivos
+            clearBtn.addEventListener('click', function() {
+                clearFiles();
+            });
+            
+            // Evento para exportar para Excel
+            exportBtn.addEventListener('click', function() {
+                if (analysisData) {
+                    exportToExcel(analysisData);
+                }
+            });
+            
+            // Evento para resetar
+            resetBtn.addEventListener('click', function() {
+                resetAnalysis();
+            });
+            
+            // Evento para debug
+            debugToggle.addEventListener('click', function() {
+                debugMode = !debugMode;
+                debugInfo.style.display = debugMode ? 'block' : 'none';
+                debugToggle.textContent = debugMode ? 'Ocultar Debug' : 'Mostrar Debug';
+            });
+            
+            // Eventos para tabs
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // Remover classe active de todas as tabs
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(tc => tc.classList.remove('active'));
+                    
+                    // Adicionar classe active à tab clicada
+                    this.classList.add('active');
+                    document.getElementById(tabId + 'Tab').classList.add('active');
+                });
+            });
+            
+            function handleFiles(fileList) {
+                for (let i = 0; i < fileList.length; i++) {
+                    const file = fileList[i];
+                    
+                    // Verificar se é um arquivo de texto
+                    if (!file.type.includes('text/') && !file.name.endsWith('.txt')) {
+                        addFileToList(file.name, false, 'Tipo de arquivo não suportado');
+                        continue;
+                    }
+                    
+                    // Verificar se o arquivo já foi adicionado
+                    if (filesData.some(f => f.name === file.name)) {
+                        addFileToList(file.name, false, 'Arquivo duplicado');
+                        continue;
+                    }
+                    
+                    addFileToList(file.name, true);
+                    filesData.push(file);
+                }
+                
+                updateFileCount();
+                processBtn.disabled = filesData.length === 0;
+            }
+            
+            function addFileToList(fileName, success, errorMessage = '') {
+                const fileItem = document.createElement('div');
+                fileItem.className = `file-item ${success ? 'success' : 'error'}`;
+                
+                if (success) {
+                    fileItem.innerHTML = `
+                        <span>${fileName}</span>
+                        <span style="color: var(--success-color);">✓ Pronto</span>
+                    `;
+                } else {
+                    fileItem.innerHTML = `
+                        <span>${fileName}</span>
+                        <span style="color: var(--accent-color);">✗ ${errorMessage}</span>
+                    `;
+                }
+                
+                fileList.appendChild(fileItem);
+            }
+            
+            function updateFileCount() {
+                const validFiles = filesData.length;
+                fileCount.textContent = `${validFiles} arquivo(s)`;
+            }
+            
+            function clearFiles() {
+                filesData = [];
+                fileList.innerHTML = '';
+                updateFileCount();
+                processBtn.disabled = true;
+            }
+            
+            function processFiles() {
+                if (filesData.length === 0) return;
+                
+                // Limpar resultados anteriores
+                resetAnalysis();
+                
+                // Mostrar loading
+                loading.style.display = 'block';
+                processBtn.disabled = true;
+                
+                // Processar cada arquivo
+                let processedCount = 0;
+                const allResults = {
+                    periodo: null,
+                    c190Records: [],
+                    groupedData: {},
+                    filesData: [],
+                    totalRegistros: 0,
+                    totalValor: 0
+                };
+                
+                filesData.forEach((file, index) => {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        try {
+                            const content = e.target.result;
+                            const fileAnalysis = analyzeSpedFile(content, file.name);
+                            
+                            allResults.filesData.push({
+                                fileName: file.name,
+                                ...fileAnalysis
+                            });
+                            
+                            // Adicionar registros ao total
+                            fileAnalysis.c190Records.forEach(record => {
+                                allResults.c190Records.push(record);
+                            });
+                            
+                            processedCount++;
+                            
+                            // Debug info
+                            if (debugMode) {
+                                debugContent.innerHTML += `
+                                    <div style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 5px;">
+                                        <strong>${file.name}:</strong><br>
+                                        - Data Início: ${fileAnalysis.periodo?.dataInicio || 'N/A'}<br>
+                                        - Data Fim: ${fileAnalysis.periodo?.dataFim || 'N/A'}<br>
+                                        - Mês/Ano: ${fileAnalysis.periodo?.mes}/${fileAnalysis.periodo?.ano || 'N/A'}<br>
+                                        - Registros C190: ${fileAnalysis.c190Records.length}
+                                    </div>
+                                `;
+                            }
+                            
+                            // Quando todos os arquivos forem processados
+                            if (processedCount === filesData.length) {
+                                // Consolidar dados
+                                consolidateResults(allResults);
+                                displayResults(allResults);
+                                loading.style.display = 'none';
+                                processBtn.disabled = false;
+                            }
+                        } catch (err) {
+                            processedCount++;
+                            console.error(`Erro ao processar ${file.name}:`, err);
+                            
+                            if (processedCount === filesData.length) {
+                                consolidateResults(allResults);
+                                displayResults(allResults);
+                                loading.style.display = 'none';
+                                processBtn.disabled = false;
+                            }
+                        }
+                    };
+                    
+                    reader.onerror = function() {
+                        processedCount++;
+                        console.error(`Erro ao ler ${file.name}`);
+                        
+                        if (processedCount === filesData.length) {
+                            consolidateResults(allResults);
+                            displayResults(allResults);
+                            loading.style.display = 'none';
+                            processBtn.disabled = false;
+                        }
+                    };
+                    
+                    reader.readAsText(file, 'ISO-8859-1');
+                });
+            }
+            
+            function analyzeSpedFile(content, fileName) {
+                const lines = content.split('\n');
+                let periodo = null;
+                let c190Records = [];
+                
+                // Procurar pelo período (registro 0000)
+                for (const line of lines) {
+                    if (line.startsWith('|0000|')) {
+                        const parts = line.split('|');
+                        console.log('Linha 0000 encontrada:', parts);
+                        
+                        if (parts.length >= 5) {
+                            const dataInicio = parts[3]; // Data inicial (DDMMAAAA)
+                            const dataFim = parts[4];   // Data final (DDMMAAAA)
+                            
+                            console.log('Data Início:', dataInicio, 'Data Fim:', dataFim);
+                            
+                            // Extrair mês e ano da data inicial (formato DDMMAAAA)
+                            if (dataInicio && dataInicio.length === 8) {
+                                const diaInicio = dataInicio.substring(0, 2);
+                                const mesInicio = dataInicio.substring(2, 4);
+                                const anoInicio = dataInicio.substring(4, 8);
+                                
+                                // Extrair mês e ano da data final
+                                const diaFim = dataFim.substring(0, 2);
+                                const mesFim = dataFim.substring(2, 4);
+                                const anoFim = dataFim.substring(4, 8);
+                                
+                                console.log('Extraído - Mês:', mesInicio, 'Ano:', anoInicio);
+                                
+                                periodo = { 
+                                    mes: mesInicio, 
+                                    ano: anoInicio, 
+                                    dataInicio: `${diaInicio}/${mesInicio}/${anoInicio}`,
+                                    dataFim: `${diaFim}/${mesFim}/${anoFim}`,
+                                    mesInicio,
+                                    anoInicio,
+                                    mesFim,
+                                    anoFim
+                                };
+                            } else {
+                                console.log('Formato de data inválido:', dataInicio);
+                                
+                                // Tentar formato alternativo (posições diferentes)
+                                if (parts.length > 6) {
+                                    const dataAltInicio = parts[4]; // Tentar posição 4
+                                    const dataAltFim = parts[5];   // Tentar posição 5
+                                    
+                                    if (dataAltInicio && dataAltInicio.length === 8) {
+                                        const diaInicio = dataAltInicio.substring(0, 2);
+                                        const mesInicio = dataAltInicio.substring(2, 4);
+                                        const anoInicio = dataAltInicio.substring(4, 8);
+                                        
+                                        const diaFim = dataAltFim.substring(0, 2);
+                                        const mesFim = dataAltFim.substring(2, 4);
+                                        const anoFim = dataAltFim.substring(4, 8);
+                                        
+                                        periodo = { 
+                                            mes: mesInicio, 
+                                            ano: anoInicio, 
+                                            dataInicio: `${diaInicio}/${mesInicio}/${anoInicio}`,
+                                            dataFim: `${diaFim}/${mesFim}/${anoFim}`,
+                                            mesInicio,
+                                            anoInicio,
+                                            mesFim,
+                                            anoFim
+                                        };
+                                        
+                                        console.log('Data encontrada em posição alternativa:', periodo);
+                                    }
+                                }
+                            }
+                        } else {
+                            console.log('Linha 0000 com formato inválido. Partes:', parts.length);
+                        }
+                        break;
+                    }
+                }
+                
+                // Procurar por registros C190
+                for (const line of lines) {
+                    if (line.startsWith('|C190|')) {
+                        const parts = line.split('|');
+                        
+                        // Verificar se tem pelo menos 6 campos (CST, CFOP e valor)
+                        if (parts.length >= 6) {
+                            const cst = parts[2] || '';
+                            const cfop = parts[3] || '';
+                            const valor = parseFloat(parts[5]?.replace(',', '.') || '0');
+                            
+                            // Determinar mês/ano do registro (usando o período do arquivo como padrão)
+                            const mesAno = periodo ? `${periodo.mes}/${periodo.ano}` : 'N/A';
+                            
+                            c190Records.push({
+                                fileName,
+                                mesAno,
+                                cst,
+                                cfop,
+                                valor
+                            });
+                        }
+                    }
+                }
+                
+                return {
+                    periodo,
+                    c190Records,
+                    totalRegistros: c190Records.length,
+                    totalValor: c190Records.reduce((sum, record) => sum + record.valor, 0)
+                };
+            }
+            
+            function consolidateResults(allResults) {
+                // Agrupar registros por mês/ano
+                const groupedData = {};
+                const fileSummary = {};
+                
+                allResults.c190Records.forEach(record => {
+                    // Agrupar por mês/ano
+                    if (!groupedData[record.mesAno]) {
+                        groupedData[record.mesAno] = {
+                            mesAno: record.mesAno,
+                            count: 0,
+                            total: 0,
+                            files: new Set(),
+                            registros: []
+                        };
+                    }
+                    
+                    groupedData[record.mesAno].count++;
+                    groupedData[record.mesAno].total += record.valor;
+                    groupedData[record.mesAno].files.add(record.fileName);
+                    groupedData[record.mesAno].registros.push(record);
+                    
+                    // Resumo por arquivo
+                    if (!fileSummary[record.fileName]) {
+                        const fileData = allResults.filesData.find(f => f.fileName === record.fileName);
+                        fileSummary[record.fileName] = {
+                            fileName: record.fileName,
+                            periodo: fileData?.periodo,
+                            count: 0,
+                            total: 0
+                        };
+                    }
+                    
+                    fileSummary[record.fileName].count++;
+                    fileSummary[record.fileName].total += record.valor;
+                });
+                
+                // Calcular totais gerais
+                allResults.totalRegistros = allResults.c190Records.length;
+                allResults.totalValor = allResults.c190Records.reduce((sum, record) => sum + record.valor, 0);
+                allResults.groupedData = groupedData;
+                allResults.fileSummary = fileSummary;
+                
+                analysisData = allResults;
+            }
+            
+            function displayResults(data) {
+                // Atualizar resumo
+                processedFiles.textContent = data.filesData.length;
+                c190Count.textContent = data.totalRegistros;
+                totalValue.textContent = `R$ ${data.totalValor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+                
+                // Preencher tabela de resumo por mês/ano
+                resultsTableBody.innerHTML = '';
+                Object.values(data.groupedData).forEach(group => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${group.mesAno}</td>
+                        <td>${group.files.size}</td>
+                        <td>${group.count}</td>
+                        <td>R$ ${group.total.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                    `;
+                    resultsTableBody.appendChild(row);
+                });
+                
+                // Preencher tabela de todos os registros C190
+                c190TableBody.innerHTML = '';
+                data.c190Records.forEach(record => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${record.fileName}</td>
+                        <td>${record.mesAno}</td>
+                        <td>${record.cst}</td>
+                        <td>${record.cfop}</td>
+                        <td>R$ ${record.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                    `;
+                    c190TableBody.appendChild(row);
+                });
+                
+                // Preencher tabela de detalhes por arquivo
+                filesTableBody.innerHTML = '';
+                Object.values(data.fileSummary).forEach(file => {
+                    const row = document.createElement('tr');
+                    const periodo = file.periodo ? 
+                        `${file.periodo.dataInicio} a ${file.periodo.dataFim}` : 
+                        'Não identificado';
+                    const mesAno = file.periodo ? 
+                        `${file.periodo.mes}/${file.periodo.ano}` : 
+                        'N/A';
+                    
+                    row.innerHTML = `
+                        <td>${file.fileName}</td>
+                        <td>${periodo}</td>
+                        <td>${mesAno}</td>
+                        <td>${file.count}</td>
+                        <td>R$ ${file.total.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                    `;
+                    filesTableBody.appendChild(row);
+                });
+                
+                // Mostrar seção de resultados
+                resultsSection.style.display = 'block';
+            }
+            
+            function exportToExcel(data) {
+                // Criar workbook
+                const wb = XLSX.utils.book_new();
+                
+                // Planilha 1: Resumo por Mês/Ano
+                const summaryData = [['Mês/Ano', 'Arquivos', 'Quantidade de Registros', 'Valor Total']];
+                Object.values(data.groupedData).forEach(group => {
+                    summaryData.push([
+                        group.mesAno,
+                        group.files.size,
+                        group.count,
+                        group.total
+                    ]);
+                });
+                
+                // Adicionar linha de totais
+                summaryData.push([
+                    'TOTAL GERAL',
+                    data.filesData.length,
+                    data.totalRegistros,
+                    data.totalValor
+                ]);
+                
+                const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
+                XLSX.utils.book_append_sheet(wb, wsSummary, 'Resumo por Mês');
+                
+                // Planilha 2: Todos os registros C190
+                const detailData = [['Arquivo', 'Mês/Ano', 'CST', 'CFOP', 'Valor']];
+                data.c190Records.forEach(record => {
+                    detailData.push([
+                        record.fileName,
+                        record.mesAno,
+                        record.cst,
+                        record.cfop,
+                        record.valor
+                    ]);
+                });
+                
+                const wsDetails = XLSX.utils.aoa_to_sheet(detailData);
+                XLSX.utils.book_append_sheet(wb, wsDetails, 'Todos os Registros');
+                
+                // Planilha 3: Detalhes por Arquivo
+                const filesData = [['Arquivo', 'Período', 'Mês/Ano', 'Registros C190', 'Valor Total']];
+                Object.values(data.fileSummary).forEach(file => {
+                    const periodo = file.periodo ? 
+                        `${file.periodo.dataInicio} a ${file.periodo.dataFim}` : 
+                        'Não identificado';
+                    const mesAno = file.periodo ? 
+                        `${file.periodo.mes}/${file.periodo.ano}` : 
+                        'N/A';
+                    
+                    filesData.push([
+                        file.fileName,
+                        periodo,
+                        mesAno,
+                        file.count,
+                        file.total
+                    ]);
+                });
+                
+                const wsFiles = XLSX.utils.aoa_to_sheet(filesData);
+                XLSX.utils.book_append_sheet(wb, wsFiles, 'Detalhes por Arquivo');
+                
+                // Planilha 4: Informações
+                const infoData = [
+                    ['Informações da Análise SPED-EFD'],
+                    [''],
+                    ['Data da Análise:', new Date().toLocaleDateString('pt-BR')],
+                    ['Total de Arquivos Processados:', data.filesData.length],
+                    ['Total de Registros C190:', data.totalRegistros],
+                    ['Valor Total dos Registros:', data.totalValor],
+                    [''],
+                    ...data.filesData.map((file, index) => [
+                        `Arquivo ${index + 1}:`,
+                        file.fileName,
+                        file.periodo ? `Período: ${file.periodo.dataInicio} a ${file.periodo.dataFim}` : 'Período não identificado',
+                        file.periodo ? `Mês/Ano: ${file.periodo.mes}/${file.periodo.ano}` : 'Mês/Ano não identificado'
+                    ])
+                ];
+                
+                const wsInfo = XLSX.utils.aoa_to_sheet(infoData);
+                XLSX.utils.book_append_sheet(wb, wsInfo, 'Informações');
+                
+                // Gerar nome do arquivo
+                const fileName = `analise_sped_multiplos_${new Date().toISOString().slice(0,10)}.xlsx`;
+                
+                // Salvar arquivo
+                XLSX.writeFile(wb, fileName);
+            }
+            
+            function resetAnalysis() {
+                resultsSection.style.display = 'none';
+                error.style.display = 'none';
+                debugContent.innerHTML = '';
+                analysisData = null;
+            }
+            
+            function showError(message) {
+                error.textContent = message;
+                error.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
