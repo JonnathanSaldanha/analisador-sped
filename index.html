@@ -7,25 +7,32 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
-            --primary-color: #2c3e50;
-            --secondary-color: #3498db;
-            --accent-color: #e74c3c;
-            --light-color: #ecf0f1;
-            --success-color: #27ae60;
-            --warning-color: #f39c12;
+            --primary-color: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary-color: #64748b;
+            --accent-color: #ef4444;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --light-color: #f8fafc;
+            --border-color: #e2e8f0;
+            --text-color: #334155;
+            --text-light: #64748b;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
         
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
         }
         
         body {
-            background-color: #f5f7fa;
-            color: #333;
+            background-color: #f1f5f9;
+            color: var(--text-color);
             line-height: 1.6;
+            font-size: 14px;
         }
         
         .container {
@@ -35,88 +42,99 @@
         }
         
         header {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
             color: white;
             padding: 30px 0;
             text-align: center;
-            border-radius: 0 0 10px 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-radius: 0 0 12px 12px;
+            box-shadow: var(--shadow);
             margin-bottom: 30px;
         }
         
         h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+            font-weight: 700;
         }
         
         .subtitle {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             opacity: 0.9;
+            font-weight: 400;
         }
         
         .card {
             background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-            padding: 25px;
-            margin-bottom: 25px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 24px;
+            margin-bottom: 24px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border: 1px solid var(--border-color);
         }
         
         .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
         }
         
         .card-title {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             color: var(--primary-color);
-            margin-bottom: 15px;
-            border-bottom: 2px solid var(--light-color);
-            padding-bottom: 10px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
         }
         
         .upload-area {
-            border: 3px dashed #bdc3c7;
+            border: 2px dashed #cbd5e1;
             border-radius: 10px;
             padding: 40px 20px;
             text-align: center;
             margin-bottom: 20px;
             cursor: pointer;
             transition: all 0.3s ease;
-            background-color: #fafbfc;
+            background-color: #f8fafc;
         }
         
         .upload-area:hover, .upload-area.dragover {
-            border-color: var(--secondary-color);
-            background-color: #e8f4fd;
+            border-color: var(--primary-color);
+            background-color: #eff6ff;
         }
         
         .upload-icon {
             font-size: 48px;
-            color: var(--secondary-color);
+            color: var(--primary-color);
             margin-bottom: 15px;
         }
         
         .btn {
-            display: inline-block;
-            background: var(--secondary-color);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: var(--primary-color);
             color: white;
             border: none;
-            padding: 12px 25px;
-            border-radius: 5px;
+            padding: 10px 20px;
+            border-radius: 6px;
             cursor: pointer;
-            font-size: 1rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
             text-decoration: none;
             text-align: center;
         }
         
         .btn:hover {
-            background: #2980b9;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
         }
         
         .btn-success {
@@ -124,7 +142,7 @@
         }
         
         .btn-success:hover {
-            background: #219653;
+            background: #0da271;
         }
         
         .btn-danger {
@@ -132,7 +150,7 @@
         }
         
         .btn-danger:hover {
-            background: #c0392b;
+            background: #dc2626;
         }
         
         .btn-warning {
@@ -140,21 +158,32 @@
         }
         
         .btn-warning:hover {
-            background: #e67e22;
+            background: #d97706;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+        }
+        
+        .btn-outline:hover {
+            background: #f8fafc;
         }
         
         .btn-group {
             display: flex;
-            gap: 10px;
+            gap: 12px;
             flex-wrap: wrap;
             margin-top: 20px;
         }
         
         .file-info {
             margin-top: 15px;
-            padding: 15px;
-            background-color: var(--light-color);
-            border-radius: 5px;
+            padding: 16px;
+            background-color: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
         }
         
         .file-list {
@@ -167,21 +196,22 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 8px 12px;
+            padding: 10px 12px;
             background: white;
-            margin-bottom: 5px;
-            border-radius: 4px;
-            border-left: 4px solid var(--secondary-color);
+            margin-bottom: 6px;
+            border-radius: 6px;
+            border-left: 4px solid var(--primary-color);
+            font-size: 0.9rem;
         }
         
         .file-item.error {
             border-left-color: var(--accent-color);
-            background-color: #fde8e8;
+            background-color: #fef2f2;
         }
         
         .file-item.success {
             border-left-color: var(--success-color);
-            background-color: #e8f8ef;
+            background-color: #f0fdf4;
         }
         
         .loading {
@@ -191,11 +221,11 @@
         }
         
         .spinner {
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid var(--secondary-color);
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid var(--primary-color);
             border-radius: 50%;
-            width: 50px;
-            height: 50px;
+            width: 40px;
+            height: 40px;
             animation: spin 1s linear infinite;
             margin: 0 auto 15px;
         }
@@ -209,29 +239,31 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 15px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            font-size: 0.9rem;
         }
         
         th, td {
-            border: 1px solid #ddd;
-            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            padding: 10px 12px;
             text-align: left;
         }
         
         th {
-            background-color: var(--primary-color);
-            color: white;
+            background-color: #f8fafc;
+            color: var(--text-color);
             font-weight: 600;
             position: sticky;
             top: 0;
+            border-bottom: 2px solid var(--border-color);
         }
         
         tr:nth-child(even) {
-            background-color: #f8f9fa;
+            background-color: #f8fafc;
         }
         
         tr:hover {
-            background-color: #e9f7fe;
+            background-color: #f1f5f9;
         }
         
         .results-section {
@@ -239,72 +271,89 @@
         }
         
         .summary-card {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
             margin-bottom: 25px;
         }
         
         .summary-item {
-            flex: 1;
-            min-width: 200px;
             background: white;
             border-radius: 8px;
             padding: 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            box-shadow: var(--shadow);
             text-align: center;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 120px;
         }
         
         .summary-value {
-            font-size: 2rem;
+            font-size: 1.8rem;
             font-weight: bold;
-            color: var(--secondary-color);
+            color: var(--primary-color);
             margin: 10px 0;
+            line-height: 1.2;
         }
         
         .summary-label {
-            color: #7f8c8d;
-            font-size: 0.9rem;
+            color: var(--text-light);
+            font-size: 0.85rem;
+            font-weight: 500;
         }
         
         .error {
             color: var(--accent-color);
-            background-color: #fde8e8;
-            padding: 15px;
-            border-radius: 5px;
+            background-color: #fef2f2;
+            padding: 12px 16px;
+            border-radius: 6px;
             margin-top: 15px;
             display: none;
+            border: 1px solid #fecaca;
+            font-size: 0.9rem;
         }
         
         footer {
             text-align: center;
             margin-top: 40px;
             padding: 20px;
-            color: #7f8c8d;
-            font-size: 0.9rem;
+            color: var(--text-light);
+            font-size: 0.85rem;
         }
         
         .tabs {
             display: flex;
             margin-bottom: 20px;
-            border-bottom: 2px solid #e0e0e0;
+            border-bottom: 1px solid var(--border-color);
             flex-wrap: wrap;
+            gap: 4px;
         }
         
         .tab {
-            padding: 12px 24px;
+            padding: 10px 16px;
             cursor: pointer;
             border: none;
             background: none;
-            font-size: 1rem;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s ease;
+            color: var(--text-light);
+            font-weight: 500;
+            border-radius: 6px 6px 0 0;
+        }
+        
+        .tab:hover {
+            color: var(--primary-color);
+            background: #f1f5f9;
         }
         
         .tab.active {
-            border-bottom-color: var(--secondary-color);
-            color: var(--secondary-color);
+            border-bottom-color: var(--primary-color);
+            color: var(--primary-color);
             font-weight: 600;
+            background: #eff6ff;
         }
         
         .tab-content {
@@ -316,76 +365,85 @@
         }
         
         .debug-info {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-radius: 5px;
-            padding: 10px;
+            background: #fffbeb;
+            border: 1px solid #fed7aa;
+            border-radius: 6px;
+            padding: 12px;
             margin-top: 10px;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             display: none;
         }
         
         .filter-section {
             margin-bottom: 20px;
-            padding: 15px;
-            background: #f8f9fa;
+            padding: 16px;
+            background: #f8fafc;
             border-radius: 8px;
+            border: 1px solid var(--border-color);
         }
         
         .filter-row {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            margin-bottom: 10px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 12px;
         }
         
         .filter-group {
-            flex: 1;
-            min-width: 200px;
+            display: flex;
+            flex-direction: column;
         }
         
         .filter-label {
             display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-            color: var(--primary-color);
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: var(--text-color);
+            font-size: 0.9rem;
         }
         
-        .filter-input {
+        .filter-input, .filter-select {
             width: 100%;
             padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
             font-size: 0.9rem;
+            transition: border-color 0.2s;
+        }
+        
+        .filter-input:focus, .filter-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
         
         .registro-badge {
             display: inline-block;
             padding: 4px 8px;
-            background: var(--secondary-color);
+            background: var(--primary-color);
             color: white;
             border-radius: 4px;
-            font-size: 0.8rem;
-            font-weight: bold;
-            margin-right: 5px;
+            font-size: 0.75rem;
+            font-weight: 600;
         }
         
         .item-highlight {
-            background-color: #e8f4fd !important;
-            border-left: 4px solid var(--secondary-color);
+            background-color: #eff6ff !important;
+            border-left: 4px solid var(--primary-color);
         }
         
         .valor-cell {
-            font-weight: bold;
+            font-weight: 600;
             color: var(--success-color);
         }
         
         .info-box {
-            background: #e8f4fd;
-            border-left: 4px solid var(--secondary-color);
-            padding: 15px;
-            margin: 15px 0;
-            border-radius: 4px;
+            background: #eff6ff;
+            border-left: 4px solid var(--primary-color);
+            padding: 16px;
+            margin: 16px 0;
+            border-radius: 6px;
+            font-size: 0.9rem;
         }
         
         .periodo-badge {
@@ -394,31 +452,172 @@
             background: var(--warning-color);
             color: white;
             border-radius: 4px;
-            font-size: 0.8rem;
-            font-weight: bold;
-            margin-right: 5px;
+            font-size: 0.75rem;
+            font-weight: 600;
         }
         
         .total-row {
-            background-color: #e8f5e8 !important;
-            font-weight: bold;
+            background-color: #f0fdf4 !important;
+            font-weight: 600;
             border-top: 2px solid var(--success-color);
+        }
+        
+        .section-title {
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+        
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .status-success {
+            background: #f0fdf4;
+            color: var(--success-color);
+            border: 1px solid #bbf7d0;
+        }
+        
+        .status-error {
+            background: #fef2f2;
+            color: var(--accent-color);
+            border: 1px solid #fecaca;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-light);
+        }
+        
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+        
+        .summary-value-large {
+            font-size: 1.5rem;
+            word-break: break-all;
+            overflow-wrap: break-word;
+        }
+        
+        .btn-group-fixed {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+            justify-content: flex-start;
+            align-items: center;
+        }
+        
+        .btn-fixed {
+            flex: 0 1 auto;
+            min-width: 140px;
+        }
+
+        /* Estilos para paginação */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .pagination-info {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .pagination-btn {
+            padding: 8px 16px;
+            border: 1px solid var(--border-color);
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .pagination-btn:hover:not(:disabled) {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .performance-warning {
+            background: #fffbeb;
+            border: 1px solid #fed7aa;
+            border-radius: 6px;
+            padding: 12px;
+            margin: 10px 0;
+            font-size: 0.9rem;
+        }
+
+        .batch-processing {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+
+        .batch-progress {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .batch-progress-bar {
+            height: 100%;
+            background: var(--primary-color);
+            transition: width 0.3s ease;
+        }
+
+        @media (max-width: 1024px) {
+            .summary-card {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .filter-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
         
         @media (max-width: 768px) {
             .container {
-                padding: 10px;
+                padding: 16px;
             }
             
             h1 {
-                font-size: 2rem;
+                font-size: 1.8rem;
             }
             
-            .btn-group {
+            .btn-group, .btn-group-fixed {
                 flex-direction: column;
             }
             
-            .btn {
+            .btn, .btn-fixed {
                 width: 100%;
             }
             
@@ -429,15 +628,35 @@
             
             .tabs {
                 flex-direction: column;
+                gap: 0;
             }
             
             .tab {
                 text-align: left;
-                border-bottom: 1px solid #e0e0e0;
+                border-bottom: 1px solid var(--border-color);
+                border-radius: 0;
             }
             
             .filter-row {
-                flex-direction: column;
+                grid-template-columns: 1fr;
+            }
+            
+            .summary-card {
+                grid-template-columns: 1fr;
+            }
+
+            .pagination {
+                flex-wrap: wrap;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .summary-card {
+                grid-template-columns: 1fr;
+            }
+            
+            .summary-value {
+                font-size: 1.5rem;
             }
         }
     </style>
@@ -445,8 +664,8 @@
 <body>
     <header>
         <div class="container">
-            <h1>Analisador SPED-EFD - Detalhamento por Ano/Mês</h1>
-            <p class="subtitle">Análise detalhada com separação por período e totais por registro</p>
+            <h1>Analisador SPED-EFD</h1>
+            <p class="subtitle">Detalhamento por Ano/Mês - Análise completa com separação por período</p>
         </div>
     </header>
     
@@ -476,10 +695,23 @@
                 <p><strong>Arquivos carregados:</strong> <span id="fileCount">0</span></p>
                 <div class="file-list" id="fileList"></div>
             </div>
+
+            <div class="batch-processing" id="batchProcessing">
+                <div class="spinner"></div>
+                <p>Processando em lote: <span id="batchProgressText">0%</span></p>
+                <div class="batch-progress">
+                    <div class="batch-progress-bar" id="batchProgressBar" style="width: 0%"></div>
+                </div>
+                <p><small>Processando arquivos... Isso pode levar alguns minutos para grandes volumes</small></p>
+            </div>
             
             <div class="btn-group">
-                <button class="btn btn-success" id="processBtn" disabled>Processar Arquivos</button>
-                <button class="btn btn-danger" id="clearBtn">Limpar Arquivos</button>
+                <button class="btn btn-success" id="processBtn" disabled>
+                    <span>Processar Arquivos</span>
+                </button>
+                <button class="btn btn-outline" id="clearBtn">
+                    <span>Limpar Arquivos</span>
+                </button>
             </div>
             
             <div class="loading" id="loading">
@@ -513,31 +745,41 @@
                     </div>
                     <div class="summary-item">
                         <div class="summary-label">Valor Total Geral</div>
-                        <div class="summary-value" id="totalValue">R$ 0,00</div>
+                        <div class="summary-value summary-value-large" id="totalValue">R$ 0,00</div>
                     </div>
                 </div>
                 
-                <div class="btn-group">
-                    <button class="btn btn-success" id="exportBtn">Exportar para Excel</button>
-                    <button class="btn btn-warning" id="applyFiltersBtn">Aplicar Filtros</button>
-                    <button class="btn" id="togglePeriodoView">Vista por Período</button>
-                    <button class="btn btn-danger" id="resetBtn">Nova Análise</button>
-                    <button class="btn" id="debugToggle">Mostrar Debug</button>
+                <div class="btn-group-fixed">
+                    <button class="btn btn-success btn-fixed" id="exportBtn">
+                        <span>Exportar para Excel</span>
+                    </button>
+                    <button class="btn btn-fixed" id="applyFiltersBtn">
+                        <span>Aplicar Filtros</span>
+                    </button>
+                    <button class="btn btn-outline btn-fixed" id="togglePeriodoView">
+                        <span>Vista por Período</span>
+                    </button>
+                    <button class="btn btn-outline btn-fixed" id="debugToggle">
+                        <span>Mostrar Debug</span>
+                    </button>
+                    <button class="btn btn-danger btn-fixed" id="resetBtn">
+                        <span>Nova Análise</span>
+                    </button>
                 </div>
             </div>
 
             <div class="filter-section">
-                <h3 class="card-title">Filtros Avançados</h3>
+                <h3 class="section-title">Filtros Avançados</h3>
                 <div class="filter-row">
                     <div class="filter-group">
                         <label class="filter-label">Ano</label>
-                        <select class="filter-input" id="filterAno">
+                        <select class="filter-select" id="filterAno">
                             <option value="">Todos os anos</option>
                         </select>
                     </div>
                     <div class="filter-group">
                         <label class="filter-label">Mês</label>
-                        <select class="filter-input" id="filterMes">
+                        <select class="filter-select" id="filterMes">
                             <option value="">Todos os meses</option>
                             <option value="01">Janeiro</option>
                             <option value="02">Fevereiro</option>
@@ -555,7 +797,7 @@
                     </div>
                     <div class="filter-group">
                         <label class="filter-label">Tipo de Registro</label>
-                        <select class="filter-input" id="filterRegistro">
+                        <select class="filter-select" id="filterRegistro">
                             <option value="">Todos os registros</option>
                         </select>
                     </div>
@@ -597,6 +839,15 @@
             <div class="tab-content active" id="periodoTab">
                 <div class="card">
                     <h2 class="card-title">Resumo por Período (Ano/Mês)</h2>
+                    <div class="pagination" id="periodoPagination" style="display: none;">
+                        <button class="pagination-btn" id="periodoFirst">Primeira</button>
+                        <button class="pagination-btn" id="periodoPrev">Anterior</button>
+                        <span class="pagination-info" id="periodoPageInfo">Página 1 de 1</span>
+                        <button class="pagination-btn" id="periodoNext">Próxima</button>
+                        <button class="pagination-btn" id="periodoLast">Última</button>
+                        <input type="number" class="pagination-input" id="periodoPageInput" min="1" value="1">
+                        <button class="pagination-btn" id="periodoGo">Ir</button>
+                    </div>
                     <table id="periodoTable">
                         <thead>
                             <tr>
@@ -619,6 +870,15 @@
             <div class="tab-content" id="registrosTab">
                 <div class="card">
                     <h2 class="card-title">Totais por Tipo de Registro</h2>
+                    <div class="pagination" id="registrosPagination" style="display: none;">
+                        <button class="pagination-btn" id="registrosFirst">Primeira</button>
+                        <button class="pagination-btn" id="registrosPrev">Anterior</button>
+                        <span class="pagination-info" id="registrosPageInfo">Página 1 de 1</span>
+                        <button class="pagination-btn" id="registrosNext">Próxima</button>
+                        <button class="pagination-btn" id="registrosLast">Última</button>
+                        <input type="number" class="pagination-input" id="registrosPageInput" min="1" value="1">
+                        <button class="pagination-btn" id="registrosGo">Ir</button>
+                    </div>
                     <table id="registrosTable">
                         <thead>
                             <tr>
@@ -640,6 +900,15 @@
                 <div class="card">
                     <h2 class="card-title">Itens com Valores Associados</h2>
                     <p><em>Associação entre registros 0200 (cadastro) e C170 (valores) por período</em></p>
+                    <div class="pagination" id="itensPagination" style="display: none;">
+                        <button class="pagination-btn" id="itensFirst">Primeira</button>
+                        <button class="pagination-btn" id="itensPrev">Anterior</button>
+                        <span class="pagination-info" id="itensPageInfo">Página 1 de 1</span>
+                        <button class="pagination-btn" id="itensNext">Próxima</button>
+                        <button class="pagination-btn" id="itensLast">Última</button>
+                        <input type="number" class="pagination-input" id="itensPageInput" min="1" value="1">
+                        <button class="pagination-btn" id="itensGo">Ir</button>
+                    </div>
                     <table id="itensTable">
                         <thead>
                             <tr>
@@ -663,6 +932,15 @@
             <div class="tab-content" id="c170Tab">
                 <div class="card">
                     <h2 class="card-title">Registros C170 - Itens de Documentos</h2>
+                    <div class="pagination" id="c170Pagination" style="display: none;">
+                        <button class="pagination-btn" id="c170First">Primeira</button>
+                        <button class="pagination-btn" id="c170Prev">Anterior</button>
+                        <span class="pagination-info" id="c170PageInfo">Página 1 de 1</span>
+                        <button class="pagination-btn" id="c170Next">Próxima</button>
+                        <button class="pagination-btn" id="c170Last">Última</button>
+                        <input type="number" class="pagination-input" id="c170PageInput" min="1" value="1">
+                        <button class="pagination-btn" id="c170Go">Ir</button>
+                    </div>
                     <table id="c170Table">
                         <thead>
                             <tr>
@@ -688,6 +966,15 @@
             <div class="tab-content" id="0200Tab">
                 <div class="card">
                     <h2 class="card-title">Cadastro de Itens (Registro 0200)</h2>
+                    <div class="pagination" id="0200Pagination" style="display: none;">
+                        <button class="pagination-btn" id="0200First">Primeira</button>
+                        <button class="pagination-btn" id="0200Prev">Anterior</button>
+                        <span class="pagination-info" id="0200PageInfo">Página 1 de 1</span>
+                        <button class="pagination-btn" id="0200Next">Próxima</button>
+                        <button class="pagination-btn" id="0200Last">Última</button>
+                        <input type="number" class="pagination-input" id="0200PageInput" min="1" value="1">
+                        <button class="pagination-btn" id="0200Go">Ir</button>
+                    </div>
                     <table id="registro0200Table">
                         <thead>
                             <tr>
@@ -710,6 +997,15 @@
             <div class="tab-content" id="detailsTab">
                 <div class="card">
                     <h2 class="card-title">Todos os Registros Detalhados</h2>
+                    <div class="pagination" id="detailsPagination" style="display: none;">
+                        <button class="pagination-btn" id="detailsFirst">Primeira</button>
+                        <button class="pagination-btn" id="detailsPrev">Anterior</button>
+                        <span class="pagination-info" id="detailsPageInfo">Página 1 de 1</span>
+                        <button class="pagination-btn" id="detailsNext">Próxima</button>
+                        <button class="pagination-btn" id="detailsLast">Última</button>
+                        <input type="number" class="pagination-input" id="detailsPageInput" min="1" value="1">
+                        <button class="pagination-btn" id="detailsGo">Ir</button>
+                    </div>
                     <table id="detailsTable">
                         <thead>
                             <tr>
@@ -732,6 +1028,15 @@
             <div class="tab-content" id="filesTab">
                 <div class="card">
                     <h2 class="card-title">Detalhes por Arquivo</h2>
+                    <div class="pagination" id="filesPagination" style="display: none;">
+                        <button class="pagination-btn" id="filesFirst">Primeira</button>
+                        <button class="pagination-btn" id="filesPrev">Anterior</button>
+                        <span class="pagination-info" id="filesPageInfo">Página 1 de 1</span>
+                        <button class="pagination-btn" id="filesNext">Próxima</button>
+                        <button class="pagination-btn" id="filesLast">Última</button>
+                        <input type="number" class="pagination-input" id="filesPageInput" min="1" value="1">
+                        <button class="pagination-btn" id="filesGo">Ir</button>
+                    </div>
                     <table id="filesTable">
                         <thead>
                             <tr>
@@ -761,6 +1066,13 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Configurações de performance
+            const PERFORMANCE_CONFIG = {
+                BATCH_SIZE: 50,
+                PAGE_SIZE: 100,
+                VIRTUAL_SCROLL_THRESHOLD: 1000
+            };
+
             // Elementos da interface
             const fileInput = document.getElementById('fileInput');
             const uploadArea = document.getElementById('uploadArea');
@@ -778,6 +1090,9 @@
             const debugContent = document.getElementById('debugContent');
             const applyFiltersBtn = document.getElementById('applyFiltersBtn');
             const togglePeriodoView = document.getElementById('togglePeriodoView');
+            const batchProcessing = document.getElementById('batchProcessing');
+            const batchProgressBar = document.getElementById('batchProgressBar');
+            const batchProgressText = document.getElementById('batchProgressText');
             
             // Elementos de resumo
             const processedFiles = document.getElementById('processedFiles');
@@ -813,6 +1128,17 @@
             let debugMode = false;
             let periodoView = true;
             
+            // Estado de paginação
+            const paginationState = {
+                periodo: { currentPage: 1, totalPages: 1, pageSize: PERFORMANCE_CONFIG.PAGE_SIZE },
+                registros: { currentPage: 1, totalPages: 1, pageSize: PERFORMANCE_CONFIG.PAGE_SIZE },
+                itens: { currentPage: 1, totalPages: 1, pageSize: PERFORMANCE_CONFIG.PAGE_SIZE },
+                c170: { currentPage: 1, totalPages: 1, pageSize: PERFORMANCE_CONFIG.PAGE_SIZE },
+                '0200': { currentPage: 1, totalPages: 1, pageSize: PERFORMANCE_CONFIG.PAGE_SIZE },
+                details: { currentPage: 1, totalPages: 1, pageSize: PERFORMANCE_CONFIG.PAGE_SIZE },
+                files: { currentPage: 1, totalPages: 1, pageSize: PERFORMANCE_CONFIG.PAGE_SIZE }
+            };
+
             // Eventos
             uploadArea.addEventListener('click', () => fileInput.click());
             uploadArea.addEventListener('dragover', (e) => {
@@ -848,7 +1174,96 @@
                     document.getElementById(tabId + 'Tab').classList.add('active');
                 });
             });
-            
+
+            // Configurar eventos de paginação para cada aba
+            setupPaginationEvents('periodo');
+            setupPaginationEvents('registros');
+            setupPaginationEvents('itens');
+            setupPaginationEvents('c170');
+            setupPaginationEvents('0200');
+            setupPaginationEvents('details');
+            setupPaginationEvents('files');
+
+            function setupPaginationEvents(tabName) {
+                document.getElementById(`${tabName}First`).addEventListener('click', () => changePage(tabName, 1));
+                document.getElementById(`${tabName}Prev`).addEventListener('click', () => changePage(tabName, paginationState[tabName].currentPage - 1));
+                document.getElementById(`${tabName}Next`).addEventListener('click', () => changePage(tabName, paginationState[tabName].currentPage + 1));
+                document.getElementById(`${tabName}Last`).addEventListener('click', () => changePage(tabName, paginationState[tabName].totalPages));
+                document.getElementById(`${tabName}Go`).addEventListener('click', () => {
+                    const page = parseInt(document.getElementById(`${tabName}PageInput`).value);
+                    if (page >= 1 && page <= paginationState[tabName].totalPages) {
+                        changePage(tabName, page);
+                    }
+                });
+            }
+
+            function changePage(tabName, newPage) {
+                if (newPage < 1 || newPage > paginationState[tabName].totalPages) return;
+                
+                paginationState[tabName].currentPage = newPage;
+                updatePaginationInfo(tabName);
+                
+                // Recarregar a tabela com os dados da página atual
+                if (analysisData) {
+                    switch(tabName) {
+                        case 'periodo':
+                            displayPeriodoTable(analysisData);
+                            break;
+                        case 'registros':
+                            displayRegistrosTable(analysisData);
+                            break;
+                        case 'itens':
+                            displayItensTable(analysisData);
+                            break;
+                        case 'c170':
+                            displayC170Table(analysisData);
+                            break;
+                        case '0200':
+                            display0200Table(analysisData);
+                            break;
+                        case 'details':
+                            displayDetailsTable(analysisData);
+                            break;
+                        case 'files':
+                            displayFilesTable(analysisData);
+                            break;
+                    }
+                }
+            }
+
+            function updatePaginationInfo(tabName) {
+                const state = paginationState[tabName];
+                document.getElementById(`${tabName}PageInfo`).textContent = 
+                    `Página ${state.currentPage} de ${state.totalPages}`;
+                document.getElementById(`${tabName}PageInput`).value = state.currentPage;
+                
+                // Atualizar estado dos botões
+                document.getElementById(`${tabName}First`).disabled = state.currentPage === 1;
+                document.getElementById(`${tabName}Prev`).disabled = state.currentPage === 1;
+                document.getElementById(`${tabName}Next`).disabled = state.currentPage === state.totalPages;
+                document.getElementById(`${tabName}Last`).disabled = state.currentPage === state.totalPages;
+            }
+
+            function setupPagination(tabName, dataArray) {
+                const state = paginationState[tabName];
+                state.totalPages = Math.ceil(dataArray.length / state.pageSize);
+                state.currentPage = 1;
+                
+                if (state.totalPages > 1) {
+                    document.getElementById(`${tabName}Pagination`).style.display = 'flex';
+                    updatePaginationInfo(tabName);
+                } else {
+                    document.getElementById(`${tabName}Pagination`).style.display = 'none';
+                }
+            }
+
+            function getPaginatedData(tabName, dataArray) {
+                const state = paginationState[tabName];
+                const start = (state.currentPage - 1) * state.pageSize;
+                const end = start + state.pageSize;
+                return dataArray.slice(start, end);
+            }
+
             function handleFiles(fileList) {
                 for (let i = 0; i < fileList.length; i++) {
                     const file = fileList[i];
@@ -871,8 +1286,8 @@
                 const fileItem = document.createElement('div');
                 fileItem.className = `file-item ${success ? 'success' : 'error'}`;
                 fileItem.innerHTML = success ? 
-                    `<span>${fileName}</span><span style="color: var(--success-color);">✓ Pronto</span>` :
-                    `<span>${fileName}</span><span style="color: var(--accent-color);">✗ ${errorMessage}</span>`;
+                    `<span>${fileName}</span><span class="status-indicator status-success">✓ Pronto</span>` :
+                    `<span>${fileName}</span><span class="status-indicator status-error">✗ ${errorMessage}</span>`;
                 fileList.appendChild(fileItem);
             }
             
@@ -891,6 +1306,53 @@
                 if (filesData.length === 0) return;
                 
                 resetAnalysis();
+                
+                if (filesData.length > 100) {
+                    processBatchFiles();
+                } else {
+                    processNormalFiles();
+                }
+            }
+
+            async function processBatchFiles() {
+                loading.style.display = 'none';
+                batchProcessing.style.display = 'block';
+                processBtn.disabled = true;
+                error.style.display = 'none';
+                
+                const allResults = {
+                    periodos: new Map(),
+                    registros: new Map(),
+                    filesData: [],
+                    totalRegistros: 0,
+                    totalValor: 0,
+                    recordTypes: new Set()
+                };
+
+                const totalBatches = Math.ceil(filesData.length / PERFORMANCE_CONFIG.BATCH_SIZE);
+                
+                for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
+                    const start = batchIndex * PERFORMANCE_CONFIG.BATCH_SIZE;
+                    const end = Math.min(start + PERFORMANCE_CONFIG.BATCH_SIZE, filesData.length);
+                    const batch = filesData.slice(start, end);
+                    
+                    const progress = ((batchIndex + 1) / totalBatches) * 100;
+                    batchProgressBar.style.width = `${progress}%`;
+                    batchProgressText.textContent = `${Math.round(progress)}%`;
+                    
+                    await processFileBatch(batch, allResults);
+                    
+                    await new Promise(resolve => setTimeout(resolve, 10));
+                }
+                
+                consolidateResults(allResults);
+                displayResults(allResults);
+                
+                batchProcessing.style.display = 'none';
+                processBtn.disabled = false;
+            }
+
+            function processNormalFiles() {
                 loading.style.display = 'block';
                 processBtn.disabled = true;
                 error.style.display = 'none';
@@ -946,6 +1408,38 @@
                     };
                     reader.readAsText(file, 'ISO-8859-1');
                 });
+            }
+
+            async function processFileBatch(batch, allResults) {
+                const promises = batch.map(file => {
+                    return new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            try {
+                                const content = e.target.result;
+                                const fileAnalysis = analyzeSpedFile(content, file.name);
+                                
+                                allResults.filesData.push({
+                                    fileName: file.name,
+                                    ...fileAnalysis
+                                });
+                                
+                                processByPeriodo(allResults, fileAnalysis, file.name);
+                                resolve();
+                            } catch (err) {
+                                console.error(`Erro ao processar ${file.name}:`, err);
+                                resolve();
+                            }
+                        };
+                        reader.onerror = () => {
+                            console.error(`Erro ao ler o arquivo ${file.name}`);
+                            resolve();
+                        };
+                        reader.readAsText(file, 'ISO-8859-1');
+                    });
+                });
+                
+                await Promise.all(promises);
             }
             
             function processByPeriodo(allResults, fileAnalysis, fileName) {
@@ -1047,43 +1541,38 @@
             function extractValorFromRegistro(registro, parts) {
                 let valor = 0;
                 
-                // Mapeamento correto dos campos de valor por registro
                 const camposValor = {
-                    'C100': 10,  // VL_DOC está na posição 10 (índice 10)
-                    'C170': 6,   // VL_ITEM está na posição 6
-                    'C190': 5,   // VL_OPR está na posição 5
-                    'C191': 3,   // VL_FCP_OP está na posição 3
-                    'C195': 3,   // VL_FCP_OP está na posição 3
-                    'C197': 3,   // VL_FCP_OP está na posição 3
-                    'C500': 5,   // VL_DOC está na posição 5
-                    'C590': 5,   // VL_TOT_DOC está na posição 5
-                    'D100': 7,   // VL_DOC está na posição 7
-                    'D190': 5,   // VL_OPR está na posição 5
-                    'D500': 5,   // VL_DOC está na posição 5
-                    'D590': 5,   // VL_TOT_DOC está na posição 5
-                    'E110': 2,   // VL_TOT_DED_GER está na posição 2
-                    'E116': 3,   // VL_DED está na posição 3
-                    'E210': 2,   // VL_TOT_DED está na posição 2
-                    'E310': 2    // VL_TOT_DED está na posição 2
+                    'C100': 10,
+                    'C170': 6,
+                    'C190': 5,
+                    'C191': 3,
+                    'C195': 3,
+                    'C197': 3,
+                    'C500': 5,
+                    'C590': 5,
+                    'D100': 7,
+                    'D190': 5,
+                    'D500': 5,
+                    'D590': 5,
+                    'E110': 2,
+                    'E116': 3,
+                    'E210': 2,
+                    'E310': 2
                 };
                 
-                // Verifica se temos um mapeamento específico para este registro
                 if (camposValor[registro] !== undefined && parts.length > camposValor[registro]) {
                     const campoValor = parts[camposValor[registro]];
                     if (campoValor && campoValor.trim() !== '') {
                         valor = parseValorSPED(campoValor);
                     }
                 } else {
-                    // Busca heurística por valores em campos numéricos
                     for (let i = 1; i < parts.length; i++) {
                         const part = parts[i];
                         if (part && part.trim() !== '') {
-                            // Verifica se parece ser um valor monetário
                             if (part.includes(',') || (!isNaN(part) && part.includes('.')) || 
                                 (part.replace(',', '.').replace(/[^0-9.-]/g, '') !== '')) {
                                 
                                 const potentialValor = parseValorSPED(part);
-                                // Filtra valores absurdos
                                 if (potentialValor !== 0 && Math.abs(potentialValor) < 1000000000000) {
                                     valor = potentialValor;
                                     break;
@@ -1121,11 +1610,9 @@
                        registro.startsWith('E');
             }
             
-            // FUNÇÃO CORRIGIDA PARA EXTRAIR DATAS DOS REGISTROS
             function extractDataFromRegistro(registro, parts) {
                 switch (registro) {
                     case 'C100': 
-                        // DT_DOC está na posição 8 - formato DDMMAAAA
                         if (parts.length > 8 && parts[8] && parts[8].length === 8) {
                             const data = parts[8];
                             return `${data.substring(0,2)}/${data.substring(2,4)}/${data.substring(4,8)}`;
@@ -1333,6 +1820,14 @@
                 
                 updateFilters(data);
                 
+                // Verificar se precisa ativar paginação
+                const totalRecords = data.totalRegistros;
+                if (totalRecords > PERFORMANCE_CONFIG.VIRTUAL_SCROLL_THRESHOLD) {
+                    Object.keys(paginationState).forEach(tab => {
+                        paginationState[tab].pageSize = PERFORMANCE_CONFIG.PAGE_SIZE;
+                    });
+                }
+                
                 displayPeriodoTable(data);
                 displayRegistrosTable(data);
                 displayItensTable(data);
@@ -1345,14 +1840,19 @@
             }
             
             function displayPeriodoTable(data) {
-                periodoTableBody.innerHTML = '';
-                let globalTotal = 0;
-                
-                Array.from(data.periodos.values()).sort((a, b) => {
+                const periodosArray = Array.from(data.periodos.values()).sort((a, b) => {
                     if (a.ano === 'N/A') return 1;
                     if (b.ano === 'N/A') return -1;
                     return `${a.ano}${a.mes}`.localeCompare(`${b.ano}${b.mes}`);
-                }).forEach(periodo => {
+                });
+                
+                setupPagination('periodo', periodosArray);
+                const paginatedData = getPaginatedData('periodo', periodosArray);
+                
+                periodoTableBody.innerHTML = '';
+                let globalTotal = 0;
+                
+                paginatedData.forEach(periodo => {
                     const totalC170 = periodo.registrosC170.reduce((sum, c170) => sum + c170.vlItem, 0);
                     const row = document.createElement('tr');
                     row.innerHTML = `
@@ -1369,25 +1869,32 @@
                     globalTotal += periodo.totalValor;
                 });
                 
-                const totalRow = document.createElement('tr');
-                totalRow.className = 'total-row';
-                totalRow.innerHTML = `
-                    <td><strong>TOTAL GERAL</strong></td>
-                    <td>${data.filesData.length}</td>
-                    <td>${data.totalRegistros}</td>
-                    <td>${data.recordTypes.size} tipos</td>
-                    <td class="valor-cell"><strong>R$ ${globalTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong></td>
-                    <td>${Array.from(data.periodos.values()).reduce((sum, p) => sum + p.items0200.size, 0)}</td>
-                    <td>${Array.from(data.periodos.values()).reduce((sum, p) => sum + p.registrosC170.length, 0)}</td>
-                    <td class="valor-cell"><strong>R$ ${Array.from(data.periodos.values()).reduce((sum, p) => sum + p.registrosC170.reduce((s, c) => s + c.vlItem, 0), 0).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong></td>
-                `;
-                periodoTableBody.appendChild(totalRow);
+                // Mostrar total geral apenas na última página
+                if (paginationState.periodo.currentPage === paginationState.periodo.totalPages || paginationState.periodo.totalPages === 1) {
+                    const totalRow = document.createElement('tr');
+                    totalRow.className = 'total-row';
+                    totalRow.innerHTML = `
+                        <td><strong>TOTAL GERAL</strong></td>
+                        <td>${data.filesData.length}</td>
+                        <td>${data.totalRegistros}</td>
+                        <td>${data.recordTypes.size} tipos</td>
+                        <td class="valor-cell"><strong>R$ ${globalTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong></td>
+                        <td>${Array.from(data.periodos.values()).reduce((sum, p) => sum + p.items0200.size, 0)}</td>
+                        <td>${Array.from(data.periodos.values()).reduce((sum, p) => sum + p.registrosC170.length, 0)}</td>
+                        <td class="valor-cell"><strong>R$ ${Array.from(data.periodos.values()).reduce((sum, p) => sum + p.registrosC170.reduce((s, c) => s + c.vlItem, 0), 0).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong></td>
+                    `;
+                    periodoTableBody.appendChild(totalRow);
+                }
             }
             
             function displayRegistrosTable(data) {
+                const registrosArray = Array.from(data.registros.values()).sort((a, b) => b.total - a.total);
+                setupPagination('registros', registrosArray);
+                const paginatedData = getPaginatedData('registros', registrosArray);
+                
                 registrosTableBody.innerHTML = '';
                 
-                Array.from(data.registros.values()).sort((a, b) => b.total - a.total).forEach(registro => {
+                paginatedData.forEach(registro => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td><span class="registro-badge">${registro.registro}</span></td>
@@ -1402,99 +1909,136 @@
             }
             
             function displayItensTable(data) {
-                itensTableBody.innerHTML = '';
-                
+                const itensArray = [];
                 Array.from(data.periodos.values()).forEach(periodo => {
                     periodo.itemsComValores.forEach(item => {
-                        const valorUnitarioMedio = item.quantidadeTotal > 0 ? item.valorTotal / item.quantidadeTotal : 0;
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td><strong>${item.codigo}</strong></td>
-                            <td>${item.descricao}</td>
-                            <td>${item.unidade}</td>
-                            <td><span class="periodo-badge">${item.periodo}</span></td>
-                            <td>${item.quantidadeTotal.toLocaleString('pt-BR', {minimumFractionDigits: 3, maximumFractionDigits: 3})}</td>
-                            <td class="valor-cell">R$ ${item.valorTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                            <td>R$ ${valorUnitarioMedio.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                            <td>${item.registrosC170.length}</td>
-                            <td>${Array.from(item.arquivos).join(', ')}</td>
-                        `;
-                        itensTableBody.appendChild(row);
+                        itensArray.push(item);
                     });
+                });
+                
+                setupPagination('itens', itensArray);
+                const paginatedData = getPaginatedData('itens', itensArray);
+                
+                itensTableBody.innerHTML = '';
+                
+                paginatedData.forEach(item => {
+                    const valorUnitarioMedio = item.quantidadeTotal > 0 ? item.valorTotal / item.quantidadeTotal : 0;
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><strong>${item.codigo}</strong></td>
+                        <td>${item.descricao}</td>
+                        <td>${item.unidade}</td>
+                        <td><span class="periodo-badge">${item.periodo}</span></td>
+                        <td>${item.quantidadeTotal.toLocaleString('pt-BR', {minimumFractionDigits: 3, maximumFractionDigits: 3})}</td>
+                        <td class="valor-cell">R$ ${item.valorTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        <td>R$ ${valorUnitarioMedio.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        <td>${item.registrosC170.length}</td>
+                        <td>${Array.from(item.arquivos).join(', ')}</td>
+                    `;
+                    itensTableBody.appendChild(row);
                 });
             }
             
             function displayC170Table(data) {
-                c170TableBody.innerHTML = '';
-                
+                const c170Array = [];
                 Array.from(data.periodos.values()).forEach(periodo => {
                     periodo.registrosC170.forEach(c170 => {
-                        const item0200 = periodo.items0200.get(c170.codItem);
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td><span class="periodo-badge">${periodo.descricao}</span></td>
-                            <td>${c170.arquivo}</td>
-                            <td><strong>${c170.codItem}</strong></td>
-                            <td>${item0200?.descricao || ''}</td>
-                            <td>${c170.descricaoCompl}</td>
-                            <td>${c170.qtd.toLocaleString('pt-BR', {minimumFractionDigits: 3, maximumFractionDigits: 3})}</td>
-                            <td>${c170.unid}</td>
-                            <td class="valor-cell">R$ ${c170.vlItem.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                            <td>R$ ${c170.vlDesc.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                            <td>R$ ${c170.vlBaseICMS.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                            <td>R$ ${c170.vlICMS.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                        `;
-                        c170TableBody.appendChild(row);
+                        c170Array.push({...c170, periodoDesc: periodo.descricao});
                     });
+                });
+                
+                setupPagination('c170', c170Array);
+                const paginatedData = getPaginatedData('c170', c170Array);
+                
+                c170TableBody.innerHTML = '';
+                
+                paginatedData.forEach(c170 => {
+                    const periodo = Array.from(data.periodos.values()).find(p => p.descricao === c170.periodoDesc);
+                    const item0200 = periodo ? periodo.items0200.get(c170.codItem) : null;
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><span class="periodo-badge">${c170.periodoDesc}</span></td>
+                        <td>${c170.arquivo}</td>
+                        <td><strong>${c170.codItem}</strong></td>
+                        <td>${item0200?.descricao || ''}</td>
+                        <td>${c170.descricaoCompl}</td>
+                        <td>${c170.qtd.toLocaleString('pt-BR', {minimumFractionDigits: 3, maximumFractionDigits: 3})}</td>
+                        <td>${c170.unid}</td>
+                        <td class="valor-cell">R$ ${c170.vlItem.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        <td>R$ ${c170.vlDesc.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        <td>R$ ${c170.vlBaseICMS.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        <td>R$ ${c170.vlICMS.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    `;
+                    c170TableBody.appendChild(row);
                 });
             }
             
             function display0200Table(data) {
-                registro0200TableBody.innerHTML = '';
-                
+                const items0200Array = [];
                 Array.from(data.periodos.values()).forEach(periodo => {
                     periodo.items0200.forEach(item => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td><span class="periodo-badge">${periodo.descricao}</span></td>
-                            <td>${item.arquivo}</td>
-                            <td><strong>${item.codigo}</strong></td>
-                            <td>${item.descricao}</td>
-                            <td>${item.codBarras}</td>
-                            <td>${item.unidade}</td>
-                            <td>${getTipoItemDescription(item.tipoItem)}</td>
-                            <td>${item.codNCM}</td>
-                        `;
-                        registro0200TableBody.appendChild(row);
+                        items0200Array.push({...item, periodoDesc: periodo.descricao});
                     });
+                });
+                
+                setupPagination('0200', items0200Array);
+                const paginatedData = getPaginatedData('0200', items0200Array);
+                
+                registro0200TableBody.innerHTML = '';
+                
+                paginatedData.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><span class="periodo-badge">${item.periodoDesc}</span></td>
+                        <td>${item.arquivo}</td>
+                        <td><strong>${item.codigo}</strong></td>
+                        <td>${item.descricao}</td>
+                        <td>${item.codBarras}</td>
+                        <td>${item.unidade}</td>
+                        <td>${getTipoItemDescription(item.tipoItem)}</td>
+                        <td>${item.codNCM}</td>
+                    `;
+                    registro0200TableBody.appendChild(row);
                 });
             }
             
             function displayDetailsTable(data) {
-                detailsTableBody.innerHTML = '';
-                
+                const detailsArray = [];
                 Array.from(data.periodos.values()).forEach(periodo => {
                     periodo.registros.forEach(record => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td><span class="periodo-badge">${periodo.descricao}</span></td>
-                            <td>${record.fileName}</td>
-                            <td><span class="registro-badge">${record.registro}</span></td>
-                            <td>${record.itemCodigo}</td>
-                            <td>${record.itemDescricao}</td>
-                            <td class="valor-cell">R$ ${record.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                            <td>${record.data}</td>
-                            <td><small>${record.linha.substring(0, 100)}...</small></td>
-                        `;
-                        detailsTableBody.appendChild(row);
+                        detailsArray.push({...record, periodoDesc: periodo.descricao});
                     });
+                });
+                
+                setupPagination('details', detailsArray);
+                const paginatedData = getPaginatedData('details', detailsArray);
+                
+                detailsTableBody.innerHTML = '';
+                
+                paginatedData.forEach(record => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><span class="periodo-badge">${record.periodoDesc}</span></td>
+                        <td>${record.fileName}</td>
+                        <td><span class="registro-badge">${record.registro}</span></td>
+                        <td>${record.itemCodigo}</td>
+                        <td>${record.itemDescricao}</td>
+                        <td class="valor-cell">R$ ${record.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        <td>${record.data}</td>
+                        <td><small>${record.linha.substring(0, 100)}...</small></td>
+                    `;
+                    detailsTableBody.appendChild(row);
                 });
             }
             
             function displayFilesTable(data) {
+                const filesArray = data.filesData;
+                setupPagination('files', filesArray);
+                const paginatedData = getPaginatedData('files', filesArray);
+                
                 filesTableBody.innerHTML = '';
                 
-                data.filesData.forEach(file => {
+                paginatedData.forEach(file => {
                     const periodo = file.periodo;
                     const row = document.createElement('tr');
                     row.innerHTML = `
@@ -1537,11 +2081,13 @@
             function applyFilters() {
                 if (!analysisData) return;
                 console.log('Aplicando filtros...');
+                // Implementar lógica de filtros aqui
             }
             
             function togglePeriodoViewHandler() {
                 periodoView = !periodoView;
                 togglePeriodoView.textContent = periodoView ? 'Vista Consolidada' : 'Vista por Período';
+                // Implementar lógica de alternância de vista
             }
             
             function toggleDebug() {
@@ -1557,183 +2103,189 @@
                 }
 
                 try {
-                    const wb = XLSX.utils.book_new();
+                    loading.style.display = 'block';
                     
-                    // Aba: Resumo por Período
-                    const periodoData = [
-                        ['Período', 'Arquivos', 'Total de Registros', 'Tipos de Registros', 'Valor Total', 'Itens Cadastrados', 'Registros C170', 'Valor C170']
-                    ];
-                    
-                    Array.from(analysisData.periodos.values()).sort((a, b) => {
-                        if (a.ano === 'N/A') return 1;
-                        if (b.ano === 'N/A') return -1;
-                        return `${a.ano}${a.mes}`.localeCompare(`${b.ano}${b.mes}`);
-                    }).forEach(periodo => {
-                        const totalC170 = periodo.registrosC170.reduce((sum, c170) => sum + c170.vlItem, 0);
-                        periodoData.push([
-                            periodo.descricao,
-                            periodo.arquivos.size,
-                            periodo.totalRegistros,
-                            Array.from(periodo.recordTypes).sort().join(', '),
-                            periodo.totalValor,
-                            periodo.items0200.size,
-                            periodo.registrosC170.length,
-                            totalC170
-                        ]);
-                    });
-                    
-                    const wsPeriodo = XLSX.utils.aoa_to_sheet(periodoData);
-                    XLSX.utils.book_append_sheet(wb, wsPeriodo, 'Resumo por Período');
-                    
-                    // Aba: Totais por Registro
-                    const registrosData = [
-                        ['Tipo de Registro', 'Descrição', 'Quantidade Total', 'Valor Total', 'Períodos', 'Arquivos']
-                    ];
-                    
-                    Array.from(analysisData.registros.values()).sort((a, b) => b.total - a.total).forEach(registro => {
-                        registrosData.push([
-                            registro.registro,
-                            getRegistroDescription(registro.registro),
-                            registro.count,
-                            registro.total,
-                            registro.periodos.size,
-                            registro.arquivos.size
-                        ]);
-                    });
-                    
-                    const wsRegistros = XLSX.utils.aoa_to_sheet(registrosData);
-                    XLSX.utils.book_append_sheet(wb, wsRegistros, 'Totais por Registro');
-                    
-                    // Aba: Itens com Valores
-                    const itensData = [
-                        ['Código', 'Descrição', 'Unidade', 'Período', 'Quantidade Total', 'Valor Total', 'Valor Unitário Médio', 'Qtde. C170', 'Arquivos']
-                    ];
-                    
-                    Array.from(analysisData.periodos.values()).forEach(periodo => {
-                        periodo.itemsComValores.forEach(item => {
-                            const valorUnitarioMedio = item.quantidadeTotal > 0 ? item.valorTotal / item.quantidadeTotal : 0;
-                            itensData.push([
-                                item.codigo,
-                                item.descricao,
-                                item.unidade,
-                                item.periodo,
-                                item.quantidadeTotal,
-                                item.valorTotal,
-                                valorUnitarioMedio,
-                                item.registrosC170.length,
-                                Array.from(item.arquivos).join(', ')
-                            ]);
-                        });
-                    });
-                    
-                    const wsItens = XLSX.utils.aoa_to_sheet(itensData);
-                    XLSX.utils.book_append_sheet(wb, wsItens, 'Itens com Valores');
-                    
-                    // Aba: Registros C170
-                    const c170Data = [
-                        ['Período', 'Arquivo', 'Código Item', 'Descrição Item', 'Descrição Complementar', 'Quantidade', 'Unidade', 'Valor Item', 'Valor Desconto', 'Base ICMS', 'Valor ICMS']
-                    ];
-                    
-                    Array.from(analysisData.periodos.values()).forEach(periodo => {
-                        periodo.registrosC170.forEach(c170 => {
-                            const item0200 = periodo.items0200.get(c170.codItem);
-                            c170Data.push([
+                    setTimeout(() => {
+                        const wb = XLSX.utils.book_new();
+                        
+                        // Aba: Resumo por Período
+                        const periodoData = [
+                            ['Período', 'Arquivos', 'Total de Registros', 'Tipos de Registros', 'Valor Total', 'Itens Cadastrados', 'Registros C170', 'Valor C170']
+                        ];
+                        
+                        Array.from(analysisData.periodos.values()).sort((a, b) => {
+                            if (a.ano === 'N/A') return 1;
+                            if (b.ano === 'N/A') return -1;
+                            return `${a.ano}${a.mes}`.localeCompare(`${b.ano}${b.mes}`);
+                        }).forEach(periodo => {
+                            const totalC170 = periodo.registrosC170.reduce((sum, c170) => sum + c170.vlItem, 0);
+                            periodoData.push([
                                 periodo.descricao,
-                                c170.arquivo,
-                                c170.codItem,
-                                item0200?.descricao || '',
-                                c170.descricaoCompl,
-                                c170.qtd,
-                                c170.unid,
-                                c170.vlItem,
-                                c170.vlDesc,
-                                c170.vlBaseICMS,
-                                c170.vlICMS
+                                periodo.arquivos.size,
+                                periodo.totalRegistros,
+                                Array.from(periodo.recordTypes).sort().join(', '),
+                                periodo.totalValor,
+                                periodo.items0200.size,
+                                periodo.registrosC170.length,
+                                totalC170
                             ]);
                         });
-                    });
-                    
-                    const wsC170 = XLSX.utils.aoa_to_sheet(c170Data);
-                    XLSX.utils.book_append_sheet(wb, wsC170, 'Registros C170');
-                    
-                    // Aba: Cadastro de Itens
-                    const registro0200Data = [
-                        ['Período', 'Arquivo', 'Código Item', 'Descrição', 'Código Barras', 'Unidade', 'Tipo Item', 'Código NCM']
-                    ];
-                    
-                    Array.from(analysisData.periodos.values()).forEach(periodo => {
-                        periodo.items0200.forEach(item => {
-                            registro0200Data.push([
-                                periodo.descricao,
-                                item.arquivo,
-                                item.codigo,
-                                item.descricao,
-                                item.codBarras,
-                                item.unidade,
-                                getTipoItemDescription(item.tipoItem),
-                                item.codNCM
+                        
+                        const wsPeriodo = XLSX.utils.aoa_to_sheet(periodoData);
+                        XLSX.utils.book_append_sheet(wb, wsPeriodo, 'Resumo por Período');
+                        
+                        // Aba: Totais por Registro
+                        const registrosData = [
+                            ['Tipo de Registro', 'Descrição', 'Quantidade Total', 'Valor Total', 'Períodos', 'Arquivos']
+                        ];
+                        
+                        Array.from(analysisData.registros.values()).sort((a, b) => b.total - a.total).forEach(registro => {
+                            registrosData.push([
+                                registro.registro,
+                                getRegistroDescription(registro.registro),
+                                registro.count,
+                                registro.total,
+                                registro.periodos.size,
+                                registro.arquivos.size
                             ]);
                         });
-                    });
-                    
-                    const ws0200 = XLSX.utils.aoa_to_sheet(registro0200Data);
-                    XLSX.utils.book_append_sheet(wb, ws0200, 'Cadastro de Itens');
-                    
-                    // NOVA ABA: Todos os Registros Detalhados
-                    const detailsData = [
-                        ['Período', 'Arquivo', 'Registro', 'Item Código', 'Item Descrição', 'Valor', 'Data', 'Linha Completa']
-                    ];
-                    
-                    Array.from(analysisData.periodos.values()).forEach(periodo => {
-                        periodo.registros.forEach(record => {
-                            detailsData.push([
-                                periodo.descricao,
-                                record.fileName,
-                                record.registro,
-                                record.itemCodigo,
-                                record.itemDescricao,
-                                record.valor,
-                                record.data,
-                                record.linha
+                        
+                        const wsRegistros = XLSX.utils.aoa_to_sheet(registrosData);
+                        XLSX.utils.book_append_sheet(wb, wsRegistros, 'Totais por Registro');
+                        
+                        // Aba: Itens com Valores
+                        const itensData = [
+                            ['Código', 'Descrição', 'Unidade', 'Período', 'Quantidade Total', 'Valor Total', 'Valor Unitário Médio', 'Qtde. C170', 'Arquivos']
+                        ];
+                        
+                        Array.from(analysisData.periodos.values()).forEach(periodo => {
+                            periodo.itemsComValores.forEach(item => {
+                                const valorUnitarioMedio = item.quantidadeTotal > 0 ? item.valorTotal / item.quantidadeTotal : 0;
+                                itensData.push([
+                                    item.codigo,
+                                    item.descricao,
+                                    item.unidade,
+                                    item.periodo,
+                                    item.quantidadeTotal,
+                                    item.valorTotal,
+                                    valorUnitarioMedio,
+                                    item.registrosC170.length,
+                                    Array.from(item.arquivos).join(', ')
+                                ]);
+                            });
+                        });
+                        
+                        const wsItens = XLSX.utils.aoa_to_sheet(itensData);
+                        XLSX.utils.book_append_sheet(wb, wsItens, 'Itens com Valores');
+                        
+                        // Aba: Registros C170
+                        const c170Data = [
+                            ['Período', 'Arquivo', 'Código Item', 'Descrição Item', 'Descrição Complementar', 'Quantidade', 'Unidade', 'Valor Item', 'Valor Desconto', 'Base ICMS', 'Valor ICMS']
+                        ];
+                        
+                        Array.from(analysisData.periodos.values()).forEach(periodo => {
+                            periodo.registrosC170.forEach(c170 => {
+                                const item0200 = periodo.items0200.get(c170.codItem);
+                                c170Data.push([
+                                    periodo.descricao,
+                                    c170.arquivo,
+                                    c170.codItem,
+                                    item0200?.descricao || '',
+                                    c170.descricaoCompl,
+                                    c170.qtd,
+                                    c170.unid,
+                                    c170.vlItem,
+                                    c170.vlDesc,
+                                    c170.vlBaseICMS,
+                                    c170.vlICMS
+                                ]);
+                            });
+                        });
+                        
+                        const wsC170 = XLSX.utils.aoa_to_sheet(c170Data);
+                        XLSX.utils.book_append_sheet(wb, wsC170, 'Registros C170');
+                        
+                        // Aba: Cadastro de Itens
+                        const registro0200Data = [
+                            ['Período', 'Arquivo', 'Código Item', 'Descrição', 'Código Barras', 'Unidade', 'Tipo Item', 'Código NCM']
+                        ];
+                        
+                        Array.from(analysisData.periodos.values()).forEach(periodo => {
+                            periodo.items0200.forEach(item => {
+                                registro0200Data.push([
+                                    periodo.descricao,
+                                    item.arquivo,
+                                    item.codigo,
+                                    item.descricao,
+                                    item.codBarras,
+                                    item.unidade,
+                                    getTipoItemDescription(item.tipoItem),
+                                    item.codNCM
+                                ]);
+                            });
+                        });
+                        
+                        const ws0200 = XLSX.utils.aoa_to_sheet(registro0200Data);
+                        XLSX.utils.book_append_sheet(wb, ws0200, 'Cadastro de Itens');
+                        
+                        // Aba: Todos os Registros Detalhados
+                        const detailsData = [
+                            ['Período', 'Arquivo', 'Registro', 'Item Código', 'Item Descrição', 'Valor', 'Data', 'Linha Completa']
+                        ];
+                        
+                        Array.from(analysisData.periodos.values()).forEach(periodo => {
+                            periodo.registros.forEach(record => {
+                                detailsData.push([
+                                    periodo.descricao,
+                                    record.fileName,
+                                    record.registro,
+                                    record.itemCodigo,
+                                    record.itemDescricao,
+                                    record.valor,
+                                    record.data,
+                                    record.linha
+                                ]);
+                            });
+                        });
+                        
+                        const wsDetails = XLSX.utils.aoa_to_sheet(detailsData);
+                        XLSX.utils.book_append_sheet(wb, wsDetails, 'Todos os Registros');
+                        
+                        // Aba: Detalhes por Arquivo
+                        const filesData = [
+                            ['Arquivo', 'Período', 'Mês/Ano', 'Total de Registros', 'Tipos de Registros', 'Valor Total', 'Itens 0200', 'Registros C170']
+                        ];
+                        
+                        analysisData.filesData.forEach(file => {
+                            const periodo = file.periodo;
+                            filesData.push([
+                                file.fileName,
+                                periodo ? `${periodo.dataInicio} a ${periodo.dataFim}` : 'Não identificado',
+                                periodo ? `${periodo.mes}/${periodo.ano}` : 'N/A',
+                                file.totalRegistros,
+                                Array.from(new Set(file.allRecords.map(r => r.registro))).join(', '),
+                                file.totalValor,
+                                file.items0200.size,
+                                file.registrosC170.length
                             ]);
                         });
-                    });
-                    
-                    const wsDetails = XLSX.utils.aoa_to_sheet(detailsData);
-                    XLSX.utils.book_append_sheet(wb, wsDetails, 'Todos os Registros');
-                    
-                    // Aba: Detalhes por Arquivo
-                    const filesData = [
-                        ['Arquivo', 'Período', 'Mês/Ano', 'Total de Registros', 'Tipos de Registros', 'Valor Total', 'Itens 0200', 'Registros C170']
-                    ];
-                    
-                    analysisData.filesData.forEach(file => {
-                        const periodo = file.periodo;
-                        filesData.push([
-                            file.fileName,
-                            periodo ? `${periodo.dataInicio} a ${periodo.dataFim}` : 'Não identificado',
-                            periodo ? `${periodo.mes}/${periodo.ano}` : 'N/A',
-                            file.totalRegistros,
-                            Array.from(new Set(file.allRecords.map(r => r.registro))).join(', '),
-                            file.totalValor,
-                            file.items0200.size,
-                            file.registrosC170.length
-                        ]);
-                    });
-                    
-                    const wsFiles = XLSX.utils.aoa_to_sheet(filesData);
-                    XLSX.utils.book_append_sheet(wb, wsFiles, 'Detalhes por Arquivo');
-                    
-                    const timestamp = new Date().toISOString().slice(0,19).replace(/:/g, '-');
-                    const fileName = `analise_sped_${timestamp}.xlsx`;
-                    
-                    XLSX.writeFile(wb, fileName);
-                    
-                    console.log('Arquivo Excel exportado com sucesso!');
+                        
+                        const wsFiles = XLSX.utils.aoa_to_sheet(filesData);
+                        XLSX.utils.book_append_sheet(wb, wsFiles, 'Detalhes por Arquivo');
+                        
+                        const timestamp = new Date().toISOString().slice(0,19).replace(/:/g, '-');
+                        const fileName = `analise_sped_${timestamp}.xlsx`;
+                        
+                        XLSX.writeFile(wb, fileName);
+                        
+                        loading.style.display = 'none';
+                        console.log('Arquivo Excel exportado com sucesso!');
+                    }, 100);
                     
                 } catch (error) {
                     console.error('Erro ao exportar para Excel:', error);
                     showError('Erro ao exportar para Excel: ' + error.message);
+                    loading.style.display = 'none';
                 }
             }
             
@@ -1743,6 +2295,13 @@
                 debugContent.innerHTML = '';
                 analysisData = null;
                 filteredData = null;
+                
+                // Resetar paginação
+                Object.keys(paginationState).forEach(tab => {
+                    paginationState[tab].currentPage = 1;
+                    paginationState[tab].totalPages = 1;
+                    document.getElementById(`${tab}Pagination`).style.display = 'none';
+                });
                 
                 filterAno.value = '';
                 filterMes.value = '';
