@@ -568,6 +568,7 @@
             padding: 12px;
             margin: 10px 0;
             font-size: 0.9rem;
+            display: none;
         }
 
         .batch-processing {
@@ -592,6 +593,20 @@
             height: 100%;
             background: var(--primary-color);
             transition: width 0.3s ease;
+        }
+
+        .current-file {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-top: 8px;
+        }
+
+        .view-consolidada .periodo-column {
+            display: none;
+        }
+
+        .view-consolidada .periodo-badge {
+            display: none;
         }
 
         @media (max-width: 1024px) {
@@ -684,6 +699,10 @@
                 </ul>
             </div>
             
+            <div class="performance-warning" id="performanceWarning">
+                <strong>⚠️ Aviso de Performance:</strong> Muitos arquivos detectados. O processamento pode levar alguns minutos. Recomendado processar em lotes menores.
+            </div>
+            
             <div class="upload-area" id="uploadArea">
                 <div class="upload-icon">📁</div>
                 <p>Clique aqui ou arraste múltiplos arquivos SPED-EFD para análise</p>
@@ -702,6 +721,7 @@
                 <div class="batch-progress">
                     <div class="batch-progress-bar" id="batchProgressBar" style="width: 0%"></div>
                 </div>
+                <p class="current-file" id="currentFile">Processando arquivos...</p>
                 <p><small>Processando arquivos... Isso pode levar alguns minutos para grandes volumes</small></p>
             </div>
             
@@ -757,7 +777,7 @@
                         <span>Aplicar Filtros</span>
                     </button>
                     <button class="btn btn-outline btn-fixed" id="togglePeriodoView">
-                        <span>Vista por Período</span>
+                        <span>Vista Consolidada</span>
                     </button>
                     <button class="btn btn-outline btn-fixed" id="debugToggle">
                         <span>Mostrar Debug</span>
@@ -813,16 +833,21 @@
                     </div>
                     <div class="filter-group">
                         <label class="filter-label">Valor Mínimo</label>
-                        <input type="number" class="filter-input" id="filterValorMin" placeholder="0.00" step="0.01">
+                        <input type="number" class="filter-input" id="filterValorMin" placeholder="0.00" step="0.01" min="0">
                     </div>
                     <div class="filter-group">
                         <label class="filter-label">Valor Máximo</label>
-                        <input type="number" class="filter-input" id="filterValorMax" placeholder="0.00" step="0.01">
+                        <input type="number" class="filter-input" id="filterValorMax" placeholder="0.00" step="0.01" min="0">
                     </div>
                     <div class="filter-group">
                         <label class="filter-label">Unidade de Medida</label>
                         <input type="text" class="filter-input" id="filterUnidade" placeholder="UN, KG, PC, etc.">
                     </div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-outline" id="clearFiltersBtn">
+                        <span>Limpar Filtros</span>
+                    </button>
                 </div>
             </div>
             
@@ -915,7 +940,7 @@
                                 <th>Código</th>
                                 <th>Descrição</th>
                                 <th>Unidade</th>
-                                <th>Período</th>
+                                <th class="periodo-column">Período</th>
                                 <th>Quantidade Total</th>
                                 <th>Valor Total</th>
                                 <th>Valor Unitário Médio</th>
@@ -944,7 +969,7 @@
                     <table id="c170Table">
                         <thead>
                             <tr>
-                                <th>Período</th>
+                                <th class="periodo-column">Período</th>
                                 <th>Arquivo</th>
                                 <th>Código Item</th>
                                 <th>Descrição Item</th>
@@ -963,22 +988,22 @@
                 </div>
             </div>
             
-            <div class="tab-content" id="0200Tab">
+            <div class="tab-content" id="tab0200">
                 <div class="card">
                     <h2 class="card-title">Cadastro de Itens (Registro 0200)</h2>
-                    <div class="pagination" id="0200Pagination" style="display: none;">
-                        <button class="pagination-btn" id="0200First">Primeira</button>
-                        <button class="pagination-btn" id="0200Prev">Anterior</button>
-                        <span class="pagination-info" id="0200PageInfo">Página 1 de 1</span>
-                        <button class="pagination-btn" id="0200Next">Próxima</button>
-                        <button class="pagination-btn" id="0200Last">Última</button>
-                        <input type="number" class="pagination-input" id="0200PageInput" min="1" value="1">
-                        <button class="pagination-btn" id="0200Go">Ir</button>
+                    <div class="pagination" id="pagination0200" style="display: none;">
+                        <button class="pagination-btn" id="first0200">Primeira</button>
+                        <button class="pagination-btn" id="prev0200">Anterior</button>
+                        <span class="pagination-info" id="pageInfo0200">Página 1 de 1</span>
+                        <button class="pagination-btn" id="next0200">Próxima</button>
+                        <button class="pagination-btn" id="last0200">Última</button>
+                        <input type="number" class="pagination-input" id="pageInput0200" min="1" value="1">
+                        <button class="pagination-btn" id="go0200">Ir</button>
                     </div>
-                    <table id="registro0200Table">
+                    <table id="table0200">
                         <thead>
                             <tr>
-                                <th>Período</th>
+                                <th class="periodo-column">Período</th>
                                 <th>Arquivo</th>
                                 <th>Código Item</th>
                                 <th>Descrição</th>
@@ -988,7 +1013,7 @@
                                 <th>Código NCM</th>
                             </tr>
                         </thead>
-                        <tbody id="registro0200TableBody">
+                        <tbody id="table0200Body">
                         </tbody>
                     </table>
                 </div>
@@ -1009,7 +1034,7 @@
                     <table id="detailsTable">
                         <thead>
                             <tr>
-                                <th>Período</th>
+                                <th class="periodo-column">Período</th>
                                 <th>Arquivo</th>
                                 <th>Registro</th>
                                 <th>Item Código</th>
@@ -1060,7 +1085,7 @@
     
     <footer>
         <div class="container">
-            <p>Analisador SPED-EFD - Detalhamento por Ano/Mês &copy; 2025 - Análise completa com separação por período</p>
+            <p>Analisador SPED-EFD - Detalhamento por Ano/Mês &copy; 2024 - Análise completa com separação por período</p>
         </div>
     </footer>
 
@@ -1089,10 +1114,13 @@
             const debugInfo = document.getElementById('debugInfo');
             const debugContent = document.getElementById('debugContent');
             const applyFiltersBtn = document.getElementById('applyFiltersBtn');
+            const clearFiltersBtn = document.getElementById('clearFiltersBtn');
             const togglePeriodoView = document.getElementById('togglePeriodoView');
             const batchProcessing = document.getElementById('batchProcessing');
             const batchProgressBar = document.getElementById('batchProgressBar');
             const batchProgressText = document.getElementById('batchProgressText');
+            const currentFile = document.getElementById('currentFile');
+            const performanceWarning = document.getElementById('performanceWarning');
             
             // Elementos de resumo
             const processedFiles = document.getElementById('processedFiles');
@@ -1115,7 +1143,7 @@
             const registrosTableBody = document.getElementById('registrosTableBody');
             const itensTableBody = document.getElementById('itensTableBody');
             const c170TableBody = document.getElementById('c170TableBody');
-            const registro0200TableBody = document.getElementById('registro0200TableBody');
+            const table0200Body = document.getElementById('table0200Body');
             const detailsTableBody = document.getElementById('detailsTableBody');
             const filesTableBody = document.getElementById('filesTableBody');
             
@@ -1162,7 +1190,12 @@
             resetBtn.addEventListener('click', resetAnalysis);
             debugToggle.addEventListener('click', toggleDebug);
             applyFiltersBtn.addEventListener('click', applyFilters);
+            clearFiltersBtn.addEventListener('click', clearFilters);
             togglePeriodoView.addEventListener('click', togglePeriodoViewHandler);
+            
+            // Eventos para validação de filtros
+            filterValorMin.addEventListener('input', validateValorFilters);
+            filterValorMax.addEventListener('input', validateValorFilters);
             
             // Eventos para tabs
             tabs.forEach(tab => {
@@ -1171,7 +1204,17 @@
                     tabs.forEach(t => t.classList.remove('active'));
                     document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
                     this.classList.add('active');
-                    document.getElementById(tabId + 'Tab').classList.add('active');
+                    
+                    // Corrigir IDs inconsistentes
+                    let contentId = tabId + 'Tab';
+                    if (tabId === '0200') {
+                        contentId = 'tab0200';
+                    }
+                    
+                    const contentElement = document.getElementById(contentId);
+                    if (contentElement) {
+                        contentElement.classList.add('active');
+                    }
                 });
             });
 
@@ -1185,16 +1228,37 @@
             setupPaginationEvents('files');
 
             function setupPaginationEvents(tabName) {
-                document.getElementById(`${tabName}First`).addEventListener('click', () => changePage(tabName, 1));
-                document.getElementById(`${tabName}Prev`).addEventListener('click', () => changePage(tabName, paginationState[tabName].currentPage - 1));
-                document.getElementById(`${tabName}Next`).addEventListener('click', () => changePage(tabName, paginationState[tabName].currentPage + 1));
-                document.getElementById(`${tabName}Last`).addEventListener('click', () => changePage(tabName, paginationState[tabName].totalPages));
-                document.getElementById(`${tabName}Go`).addEventListener('click', () => {
-                    const page = parseInt(document.getElementById(`${tabName}PageInput`).value);
-                    if (page >= 1 && page <= paginationState[tabName].totalPages) {
-                        changePage(tabName, page);
-                    }
-                });
+                // IDs corrigidos para evitar problemas
+                let firstBtn, prevBtn, nextBtn, lastBtn, pageInput, goBtn;
+                
+                if (tabName === '0200') {
+                    firstBtn = document.getElementById('first0200');
+                    prevBtn = document.getElementById('prev0200');
+                    nextBtn = document.getElementById('next0200');
+                    lastBtn = document.getElementById('last0200');
+                    pageInput = document.getElementById('pageInput0200');
+                    goBtn = document.getElementById('go0200');
+                } else {
+                    firstBtn = document.getElementById(`${tabName}First`);
+                    prevBtn = document.getElementById(`${tabName}Prev`);
+                    nextBtn = document.getElementById(`${tabName}Next`);
+                    lastBtn = document.getElementById(`${tabName}Last`);
+                    pageInput = document.getElementById(`${tabName}PageInput`);
+                    goBtn = document.getElementById(`${tabName}Go`);
+                }
+
+                if (firstBtn) firstBtn.addEventListener('click', () => changePage(tabName, 1));
+                if (prevBtn) prevBtn.addEventListener('click', () => changePage(tabName, paginationState[tabName].currentPage - 1));
+                if (nextBtn) nextBtn.addEventListener('click', () => changePage(tabName, paginationState[tabName].currentPage + 1));
+                if (lastBtn) lastBtn.addEventListener('click', () => changePage(tabName, paginationState[tabName].totalPages));
+                if (goBtn && pageInput) {
+                    goBtn.addEventListener('click', () => {
+                        const page = parseInt(pageInput.value);
+                        if (page >= 1 && page <= paginationState[tabName].totalPages) {
+                            changePage(tabName, page);
+                        }
+                    });
+                }
             }
 
             function changePage(tabName, newPage) {
@@ -1204,28 +1268,28 @@
                 updatePaginationInfo(tabName);
                 
                 // Recarregar a tabela com os dados da página atual
-                if (analysisData) {
+                if (filteredData) {
                     switch(tabName) {
                         case 'periodo':
-                            displayPeriodoTable(analysisData);
+                            displayPeriodoTable(filteredData);
                             break;
                         case 'registros':
-                            displayRegistrosTable(analysisData);
+                            displayRegistrosTable(filteredData);
                             break;
                         case 'itens':
-                            displayItensTable(analysisData);
+                            displayItensTable(filteredData);
                             break;
                         case 'c170':
-                            displayC170Table(analysisData);
+                            displayC170Table(filteredData);
                             break;
                         case '0200':
-                            display0200Table(analysisData);
+                            display0200Table(filteredData);
                             break;
                         case 'details':
-                            displayDetailsTable(analysisData);
+                            displayDetailsTable(filteredData);
                             break;
                         case 'files':
-                            displayFilesTable(analysisData);
+                            displayFilesTable(filteredData);
                             break;
                     }
                 }
@@ -1233,15 +1297,42 @@
 
             function updatePaginationInfo(tabName) {
                 const state = paginationState[tabName];
-                document.getElementById(`${tabName}PageInfo`).textContent = 
-                    `Página ${state.currentPage} de ${state.totalPages}`;
-                document.getElementById(`${tabName}PageInput`).value = state.currentPage;
+                let pageInfo, pageInput;
+                
+                if (tabName === '0200') {
+                    pageInfo = document.getElementById('pageInfo0200');
+                    pageInput = document.getElementById('pageInput0200');
+                } else {
+                    pageInfo = document.getElementById(`${tabName}PageInfo`);
+                    pageInput = document.getElementById(`${tabName}PageInput`);
+                }
+
+                if (pageInfo) {
+                    pageInfo.textContent = `Página ${state.currentPage} de ${state.totalPages}`;
+                }
+                if (pageInput) {
+                    pageInput.value = state.currentPage;
+                }
                 
                 // Atualizar estado dos botões
-                document.getElementById(`${tabName}First`).disabled = state.currentPage === 1;
-                document.getElementById(`${tabName}Prev`).disabled = state.currentPage === 1;
-                document.getElementById(`${tabName}Next`).disabled = state.currentPage === state.totalPages;
-                document.getElementById(`${tabName}Last`).disabled = state.currentPage === state.totalPages;
+                let firstBtn, prevBtn, nextBtn, lastBtn;
+                
+                if (tabName === '0200') {
+                    firstBtn = document.getElementById('first0200');
+                    prevBtn = document.getElementById('prev0200');
+                    nextBtn = document.getElementById('next0200');
+                    lastBtn = document.getElementById('last0200');
+                } else {
+                    firstBtn = document.getElementById(`${tabName}First`);
+                    prevBtn = document.getElementById(`${tabName}Prev`);
+                    nextBtn = document.getElementById(`${tabName}Next`);
+                    lastBtn = document.getElementById(`${tabName}Last`);
+                }
+
+                if (firstBtn) firstBtn.disabled = state.currentPage === 1;
+                if (prevBtn) prevBtn.disabled = state.currentPage === 1;
+                if (nextBtn) nextBtn.disabled = state.currentPage === state.totalPages;
+                if (lastBtn) lastBtn.disabled = state.currentPage === state.totalPages;
             }
 
             function setupPagination(tabName, dataArray) {
@@ -1249,11 +1340,20 @@
                 state.totalPages = Math.ceil(dataArray.length / state.pageSize);
                 state.currentPage = 1;
                 
-                if (state.totalPages > 1) {
-                    document.getElementById(`${tabName}Pagination`).style.display = 'flex';
-                    updatePaginationInfo(tabName);
+                let paginationElement;
+                if (tabName === '0200') {
+                    paginationElement = document.getElementById('pagination0200');
                 } else {
-                    document.getElementById(`${tabName}Pagination`).style.display = 'none';
+                    paginationElement = document.getElementById(`${tabName}Pagination`);
+                }
+                
+                if (paginationElement) {
+                    if (state.totalPages > 1) {
+                        paginationElement.style.display = 'flex';
+                        updatePaginationInfo(tabName);
+                    } else {
+                        paginationElement.style.display = 'none';
+                    }
                 }
             }
 
@@ -1265,6 +1365,8 @@
             }
 
             function handleFiles(fileList) {
+                performanceWarning.style.display = fileList.length > 50 ? 'block' : 'none';
+                
                 for (let i = 0; i < fileList.length; i++) {
                     const file = fileList[i];
                     if (!file.type.includes('text/') && !file.name.endsWith('.txt')) {
@@ -1300,6 +1402,7 @@
                 fileList.innerHTML = '';
                 updateFileCount();
                 processBtn.disabled = true;
+                performanceWarning.style.display = 'none';
             }
             
             function processFiles() {
@@ -1340,7 +1443,7 @@
                     batchProgressBar.style.width = `${progress}%`;
                     batchProgressText.textContent = `${Math.round(progress)}%`;
                     
-                    await processFileBatch(batch, allResults);
+                    await processFileBatch(batch, allResults, batchIndex, totalBatches);
                     
                     await new Promise(resolve => setTimeout(resolve, 10));
                 }
@@ -1410,8 +1513,8 @@
                 });
             }
 
-            async function processFileBatch(batch, allResults) {
-                const promises = batch.map(file => {
+            async function processFileBatch(batch, allResults, batchIndex, totalBatches) {
+                const promises = batch.map((file, fileIndex) => {
                     return new Promise((resolve) => {
                         const reader = new FileReader();
                         reader.onload = function(e) {
@@ -1425,14 +1528,20 @@
                                 });
                                 
                                 processByPeriodo(allResults, fileAnalysis, file.name);
+                                
+                                // Atualizar arquivo atual
+                                const overallIndex = batchIndex * PERFORMANCE_CONFIG.BATCH_SIZE + fileIndex + 1;
+                                currentFile.textContent = `Processando: ${file.name} (${overallIndex} de ${filesData.length})`;
                                 resolve();
                             } catch (err) {
                                 console.error(`Erro ao processar ${file.name}:`, err);
+                                currentFile.textContent = `Erro em: ${file.name}`;
                                 resolve();
                             }
                         };
                         reader.onerror = () => {
                             console.error(`Erro ao ler o arquivo ${file.name}`);
+                            currentFile.textContent = `Erro ao ler: ${file.name}`;
                             resolve();
                         };
                         reader.readAsText(file, 'ISO-8859-1');
@@ -1498,7 +1607,7 @@
                 periodo.registrosC170.push(...fileAnalysis.registrosC170);
             }
 
-            // FUNÇÃO CORRIGIDA PARA PARSE DE VALORES DO SPED
+            // FUNÇÃO MELHORADA PARA PARSE DE VALORES DO SPED
             function parseValorSPED(valorStr) {
                 if (!valorStr || valorStr === '' || valorStr === undefined) return 0;
                 
@@ -1506,30 +1615,45 @@
                 if (valorStr === '') return 0;
                 
                 try {
-                    if (!isNaN(valorStr) && !valorStr.includes(',') && !valorStr.includes('.')) {
-                        return parseFloat(valorStr);
+                    // Remover qualquer caractere que não seja número, ponto ou vírgula
+                    let valorLimpo = valorStr.replace(/[^\d,.-]/g, '');
+                    
+                    // Se não há separadores decimais, tratar como inteiro
+                    if (!valorLimpo.includes(',') && !valorLimpo.includes('.')) {
+                        return parseFloat(valorLimpo) || 0;
                     }
                     
-                    if (valorStr.includes(',')) {
-                        let valorLimpo = valorStr.replace(/\./g, '');
-                        valorLimpo = valorLimpo.replace(',', '.');
-                        
-                        const valorNumerico = parseFloat(valorLimpo);
-                        if (isNaN(valorNumerico)) {
-                            console.warn('Valor não pôde ser parseado:', valorStr);
-                            return 0;
+                    // Tratamento para formato brasileiro: 1.234,56
+                    if (valorLimpo.includes(',') && valorLimpo.lastIndexOf(',') > valorLimpo.lastIndexOf('.')) {
+                        // Remover pontos dos milhares e substituir vírgula decimal por ponto
+                        valorLimpo = valorLimpo.replace(/\./g, '').replace(',', '.');
+                    }
+                    // Tratamento para formato internacional: 1,234.56
+                    else if (valorLimpo.includes('.') && valorLimpo.lastIndexOf('.') > valorLimpo.lastIndexOf(',')) {
+                        // Remover vírgulas dos milhares
+                        valorLimpo = valorLimpo.replace(/,/g, '');
+                    }
+                    
+                    const valorNumerico = parseFloat(valorLimpo);
+                    
+                    // Validação rigorosa
+                    if (isNaN(valorNumerico)) {
+                        console.warn('Valor não pôde ser parseado:', valorStr, '->', valorLimpo);
+                        return 0;
+                    }
+                    
+                    // Verificar se o valor é realistico (menos de 1 bilhão)
+                    if (Math.abs(valorNumerico) > 1000000000) {
+                        console.warn('Valor potencialmente errado:', valorStr, '->', valorNumerico);
+                        // Para valores muito grandes, tentar dividir por 100 (possível erro de casas decimais)
+                        const valorCorrigido = valorNumerico / 100;
+                        if (Math.abs(valorCorrigido) < 1000000000) {
+                            return valorCorrigido;
                         }
-                        
-                        return valorNumerico;
+                        return 0;
                     }
                     
-                    if (valorStr.includes('.')) {
-                        const valorNumerico = parseFloat(valorStr);
-                        return isNaN(valorNumerico) ? 0 : valorNumerico;
-                    }
-                    
-                    const valorNumerico = parseFloat(valorStr);
-                    return isNaN(valorNumerico) ? 0 : valorNumerico;
+                    return valorNumerico;
                     
                 } catch (error) {
                     console.error('Erro ao parsear valor:', valorStr, error);
@@ -1542,30 +1666,41 @@
                 let valor = 0;
                 
                 const camposValor = {
-                    'C100': 10,
-                    'C170': 6,
-                    'C190': 5,
-                    'C191': 3,
-                    'C195': 3,
-                    'C197': 3,
-                    'C500': 5,
-                    'C590': 5,
-                    'D100': 7,
-                    'D190': 5,
-                    'D500': 5,
-                    'D590': 5,
-                    'E110': 2,
-                    'E116': 3,
-                    'E210': 2,
-                    'E310': 2
+                    'C100': 10,    // VL_PIS em C100
+                    'C170': 6,     // VL_ITEM em C170
+                    'C190': 5,     // VL_OPR em C190
+                    'C191': 3,     // VL_BC_ICMS em C191
+                    'C195': 3,     // VL_BC_ICMS em C195
+                    'C197': 3,     // VL_BC_ICMS em C197
+                    'C500': 5,     // VL_DOC em C500
+                    'C590': 5,     // VL_BC_ICMS em C590
+                    'D100': 7,     // VL_DOC em D100 - CORRIGIDO
+                    'D190': 5,     // VL_BC_ICMS em D190
+                    'D500': 5,     // VL_DOC em D500
+                    'D590': 5,     // VL_BC_ICMS em D590
+                    'E110': 2,     // VL_TOT_DEBITOS em E110
+                    'E116': 3,     // VL_OUT_DEB em E116
+                    'E210': 2,     // VL_TOT_DEBITOS em E210
+                    'E310': 2      // VL_TOT_DEBITOS em E310
                 };
                 
-                if (camposValor[registro] !== undefined && parts.length > camposValor[registro]) {
+                // Tratamento específico para D100
+                if (registro === 'D100' && parts.length > 7) {
+                    const campoValor = parts[7]; // Campo 8 (índice 7) é VL_DOC no D100
+                    if (campoValor && campoValor.trim() !== '') {
+                        valor = parseValorSPED(campoValor);
+                        if (debugMode) {
+                            console.log('D100 - Campo valor:', campoValor, 'Valor parseado:', valor);
+                        }
+                    }
+                }
+                else if (camposValor[registro] !== undefined && parts.length > camposValor[registro]) {
                     const campoValor = parts[camposValor[registro]];
                     if (campoValor && campoValor.trim() !== '') {
                         valor = parseValorSPED(campoValor);
                     }
                 } else {
+                    // Fallback: procurar por campos numéricos
                     for (let i = 1; i < parts.length; i++) {
                         const part = parts[i];
                         if (part && part.trim() !== '') {
@@ -1573,13 +1708,22 @@
                                 (part.replace(',', '.').replace(/[^0-9.-]/g, '') !== '')) {
                                 
                                 const potentialValor = parseValorSPED(part);
-                                if (potentialValor !== 0 && Math.abs(potentialValor) < 1000000000000) {
+                                // Validação mais rigorosa para evitar valores absurdos
+                                if (potentialValor !== 0 && Math.abs(potentialValor) < 1000000000) { // Limite de 1 bilhão
                                     valor = potentialValor;
                                     break;
                                 }
                             }
                         }
                     }
+                }
+                
+                // Validação final do valor
+                if (!isFinite(valor) || Math.abs(valor) > 1e12) {
+                    if (debugMode) {
+                        console.warn(`Valor inválido detectado no registro ${registro}:`, valor, 'Parts:', parts);
+                    }
+                    valor = 0;
                 }
                 
                 if (debugMode && valor !== 0) {
@@ -1747,7 +1891,12 @@
                 
                 data.periodos.forEach((periodo, periodoKey) => {
                     periodo.registros.forEach(record => {
-                        if (!isFinite(record.valor) || record.valor > 1e15) {
+                        // Validação mais rigorosa
+                        if (!isFinite(record.valor) || 
+                            record.valor > 1e12 || 
+                            record.valor < -1e12 ||
+                            (record.registro === 'D100' && record.valor > 1000000000)) {
+                            
                             console.warn(`Valor inválido encontrado:`, {
                                 periodo: periodoKey,
                                 registro: record.registro,
@@ -1819,6 +1968,7 @@
                 totalValue.textContent = `R$ ${data.totalValor.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
                 
                 updateFilters(data);
+                updateDebugInfo(data);
                 
                 // Verificar se precisa ativar paginação
                 const totalRecords = data.totalRegistros;
@@ -1928,7 +2078,7 @@
                         <td><strong>${item.codigo}</strong></td>
                         <td>${item.descricao}</td>
                         <td>${item.unidade}</td>
-                        <td><span class="periodo-badge">${item.periodo}</span></td>
+                        <td class="periodo-column"><span class="periodo-badge">${item.periodo}</span></td>
                         <td>${item.quantidadeTotal.toLocaleString('pt-BR', {minimumFractionDigits: 3, maximumFractionDigits: 3})}</td>
                         <td class="valor-cell">R$ ${item.valorTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                         <td>R$ ${valorUnitarioMedio.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
@@ -1957,7 +2107,7 @@
                     const item0200 = periodo ? periodo.items0200.get(c170.codItem) : null;
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td><span class="periodo-badge">${c170.periodoDesc}</span></td>
+                        <td class="periodo-column"><span class="periodo-badge">${c170.periodoDesc}</span></td>
                         <td>${c170.arquivo}</td>
                         <td><strong>${c170.codItem}</strong></td>
                         <td>${item0200?.descricao || ''}</td>
@@ -1984,12 +2134,12 @@
                 setupPagination('0200', items0200Array);
                 const paginatedData = getPaginatedData('0200', items0200Array);
                 
-                registro0200TableBody.innerHTML = '';
+                table0200Body.innerHTML = '';
                 
                 paginatedData.forEach(item => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td><span class="periodo-badge">${item.periodoDesc}</span></td>
+                        <td class="periodo-column"><span class="periodo-badge">${item.periodoDesc}</span></td>
                         <td>${item.arquivo}</td>
                         <td><strong>${item.codigo}</strong></td>
                         <td>${item.descricao}</td>
@@ -1998,7 +2148,7 @@
                         <td>${getTipoItemDescription(item.tipoItem)}</td>
                         <td>${item.codNCM}</td>
                     `;
-                    registro0200TableBody.appendChild(row);
+                    table0200Body.appendChild(row);
                 });
             }
             
@@ -2018,7 +2168,7 @@
                 paginatedData.forEach(record => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td><span class="periodo-badge">${record.periodoDesc}</span></td>
+                        <td class="periodo-column"><span class="periodo-badge">${record.periodoDesc}</span></td>
                         <td>${record.fileName}</td>
                         <td><span class="registro-badge">${record.registro}</span></td>
                         <td>${record.itemCodigo}</td>
@@ -2078,22 +2228,177 @@
                 });
             }
             
+            // FUNÇÃO IMPLEMENTADA: Aplicar Filtros
             function applyFilters() {
                 if (!analysisData) return;
+                
                 console.log('Aplicando filtros...');
-                // Implementar lógica de filtros aqui
+                
+                // Criar cópia dos dados para filtragem
+                filteredData = JSON.parse(JSON.stringify(analysisData));
+                
+                // Aplicar filtros
+                const anoFiltro = filterAno.value;
+                const mesFiltro = filterMes.value;
+                const registroFiltro = filterRegistro.value;
+                const itemCodigoFiltro = filterItemCodigo.value.trim().toUpperCase();
+                const itemDescricaoFiltro = filterItemDescricao.value.trim().toLowerCase();
+                const valorMinFiltro = parseFloat(filterValorMin.value) || 0;
+                const valorMaxFiltro = parseFloat(filterValorMax.value) || Infinity;
+                const unidadeFiltro = filterUnidade.value.trim().toUpperCase();
+                
+                // Filtrar períodos
+                filteredData.periodos.forEach((periodo, periodoKey) => {
+                    if (anoFiltro && periodo.ano !== anoFiltro) {
+                        filteredData.periodos.delete(periodoKey);
+                        return;
+                    }
+                    
+                    if (mesFiltro && periodo.mes !== mesFiltro) {
+                        filteredData.periodos.delete(periodoKey);
+                        return;
+                    }
+                    
+                    // Filtrar registros dentro do período
+                    periodo.registros = periodo.registros.filter(record => {
+                        if (registroFiltro && record.registro !== registroFiltro) return false;
+                        if (itemCodigoFiltro && record.itemCodigo !== itemCodigoFiltro) return false;
+                        if (itemDescricaoFiltro && !record.itemDescricao.toLowerCase().includes(itemDescricaoFiltro)) return false;
+                        if (record.valor < valorMinFiltro || record.valor > valorMaxFiltro) return false;
+                        return true;
+                    });
+                    
+                    // Filtrar itens 0200
+                    periodo.items0200.forEach((item, codigo) => {
+                        if (unidadeFiltro && item.unidade !== unidadeFiltro) {
+                            periodo.items0200.delete(codigo);
+                        }
+                    });
+                    
+                    // Filtrar registros C170
+                    periodo.registrosC170 = periodo.registrosC170.filter(c170 => {
+                        if (itemCodigoFiltro && c170.codItem !== itemCodigoFiltro) return false;
+                        if (unidadeFiltro && c170.unid !== unidadeFiltro) return false;
+                        if (c170.vlItem < valorMinFiltro || c170.vlItem > valorMaxFiltro) return false;
+                        return true;
+                    });
+                    
+                    // Recalcular totais do período
+                    periodo.totalRegistros = periodo.registros.length;
+                    periodo.totalValor = periodo.registros.reduce((sum, record) => sum + record.valor, 0);
+                    periodo.recordTypes = new Set(periodo.registros.map(r => r.registro));
+                });
+                
+                // Recalcular totais gerais
+                filteredData.totalRegistros = Array.from(filteredData.periodos.values())
+                    .reduce((sum, periodo) => sum + periodo.totalRegistros, 0);
+                filteredData.totalValor = Array.from(filteredData.periodos.values())
+                    .reduce((sum, periodo) => sum + periodo.totalValor, 0);
+                
+                // Atualizar exibição
+                displayResults(filteredData);
+                
+                console.log('Filtros aplicados com sucesso');
             }
             
+            // FUNÇÃO IMPLEMENTADA: Limpar Filtros
+            function clearFilters() {
+                filterAno.value = '';
+                filterMes.value = '';
+                filterRegistro.value = '';
+                filterItemCodigo.value = '';
+                filterItemDescricao.value = '';
+                filterValorMin.value = '';
+                filterValorMax.value = '';
+                filterUnidade.value = '';
+                
+                if (analysisData) {
+                    filteredData = JSON.parse(JSON.stringify(analysisData));
+                    displayResults(filteredData);
+                }
+                
+                console.log('Filtros limpos');
+            }
+            
+            // FUNÇÃO IMPLEMENTADA: Validar Filtros de Valor
+            function validateValorFilters() {
+                const valorMin = parseFloat(filterValorMin.value);
+                const valorMax = parseFloat(filterValorMax.value);
+                
+                if (valorMin > 0 && valorMax > 0 && valorMin > valorMax) {
+                    filterValorMin.setCustomValidity('Valor mínimo não pode ser maior que o máximo');
+                    filterValorMin.style.borderColor = 'var(--accent-color)';
+                    filterValorMax.style.borderColor = 'var(--accent-color)';
+                } else {
+                    filterValorMin.setCustomValidity('');
+                    filterValorMin.style.borderColor = '';
+                    filterValorMax.style.borderColor = '';
+                }
+            }
+            
+            // FUNÇÃO IMPLEMENTADA: Alternar Vista Período/Consolidada
             function togglePeriodoViewHandler() {
                 periodoView = !periodoView;
                 togglePeriodoView.textContent = periodoView ? 'Vista Consolidada' : 'Vista por Período';
-                // Implementar lógica de alternância de vista
+                
+                // Aplicar/remover classe para ocultar colunas de período
+                const tables = document.querySelectorAll('#itensTab, #c170Tab, #tab0200, #detailsTab');
+                tables.forEach(table => {
+                    if (periodoView) {
+                        table.classList.remove('view-consolidada');
+                    } else {
+                        table.classList.add('view-consolidada');
+                    }
+                });
+                
+                // Se há dados filtrados, reexibir para aplicar a mudança de visualização
+                if (filteredData) {
+                    displayItensTable(filteredData);
+                    displayC170Table(filteredData);
+                    display0200Table(filteredData);
+                    displayDetailsTable(filteredData);
+                }
+                
+                console.log(`Vista alterada para: ${periodoView ? 'Por Período' : 'Consolidada'}`);
             }
             
+            // FUNÇÃO IMPLEMENTADA: Atualizar Informações de Debug
+            function updateDebugInfo(data) {
+                if (!debugMode) return;
+                
+                let debugHTML = `
+                    <div><strong>Arquivos Processados:</strong> ${data.filesData.length}</div>
+                    <div><strong>Períodos Encontrados:</strong> ${data.periodos.size}</div>
+                    <div><strong>Total de Registros:</strong> ${data.totalRegistros}</div>
+                    <div><strong>Valor Total:</strong> R$ ${data.totalValor.toLocaleString('pt-BR')}</div>
+                    <div><strong>Tipos de Registro:</strong> ${Array.from(data.recordTypes).sort().join(', ')}</div>
+                    <br>
+                    <div><strong>Detalhes por Período:</strong></div>
+                `;
+                
+                Array.from(data.periodos.values()).sort((a, b) => `${a.ano}${a.mes}`.localeCompare(`${b.ano}${b.mes}`)).forEach(periodo => {
+                    debugHTML += `
+                        <div style="margin-left: 20px;">
+                            <strong>${periodo.descricao}:</strong> 
+                            ${periodo.registros.length} registros, 
+                            R$ ${periodo.totalValor.toLocaleString('pt-BR')}, 
+                            ${periodo.arquivos.size} arquivos
+                        </div>
+                    `;
+                });
+                
+                debugContent.innerHTML = debugHTML;
+            }
+            
+            // FUNÇÃO IMPLEMENTADA: Toggle Debug
             function toggleDebug() {
                 debugMode = !debugMode;
                 debugInfo.style.display = debugMode ? 'block' : 'none';
                 debugToggle.textContent = debugMode ? 'Ocultar Debug' : 'Mostrar Debug';
+                
+                if (debugMode && filteredData) {
+                    updateDebugInfo(filteredData);
+                }
             }
             
             function exportToExcel() {
@@ -2300,7 +2605,18 @@
                 Object.keys(paginationState).forEach(tab => {
                     paginationState[tab].currentPage = 1;
                     paginationState[tab].totalPages = 1;
-                    document.getElementById(`${tab}Pagination`).style.display = 'none';
+                    
+                    // Corrigir seletores para evitar erros
+                    let paginationElement;
+                    if (tab === '0200') {
+                        paginationElement = document.getElementById('pagination0200');
+                    } else {
+                        paginationElement = document.getElementById(`${tab}Pagination`);
+                    }
+                    
+                    if (paginationElement) {
+                        paginationElement.style.display = 'none';
+                    }
                 });
                 
                 filterAno.value = '';
@@ -2311,6 +2627,13 @@
                 filterValorMin.value = '';
                 filterValorMax.value = '';
                 filterUnidade.value = '';
+                
+                // Resetar vista
+                periodoView = true;
+                togglePeriodoView.textContent = 'Vista Consolidada';
+                document.querySelectorAll('#itensTab, #c170Tab, #tab0200, #detailsTab').forEach(table => {
+                    table.classList.remove('view-consolidada');
+                });
             }
             
             function showError(message) {
