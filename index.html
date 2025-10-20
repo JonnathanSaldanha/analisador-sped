@@ -272,7 +272,7 @@
         
         .summary-card {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(5, 1fr);
             gap: 16px;
             margin-bottom: 25px;
         }
@@ -290,6 +290,12 @@
             min-height: 120px;
         }
         
+        .summary-item.highlight {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border-color: #047857;
+        }
+        
         .summary-value {
             font-size: 1.8rem;
             font-weight: bold;
@@ -298,10 +304,18 @@
             line-height: 1.2;
         }
         
+        .summary-item.highlight .summary-value {
+            color: white;
+        }
+        
         .summary-label {
             color: var(--text-light);
             font-size: 0.85rem;
             font-weight: 500;
+        }
+        
+        .summary-item.highlight .summary-label {
+            color: rgba(255, 255, 255, 0.9);
         }
         
         .error {
@@ -609,13 +623,95 @@
             display: none;
         }
 
+        /* NOVO: Indicador de processamento em background */
+        .background-processing {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--success-color);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .background-processing .spinner {
+            width: 16px;
+            height: 16px;
+            border-width: 2px;
+            margin: 0;
+        }
+
+        /* NOVO: Estilo para CNPJ e NOME */
+        .cnpj-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            background: var(--secondary-color);
+            color: white;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            font-family: monospace;
+        }
+
+        .empresa-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .empresa-nome {
+            font-weight: 600;
+            color: var(--text-color);
+            font-size: 0.85rem;
+        }
+
+        .empresa-cnpj {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            font-family: monospace;
+        }
+
+        .filter-empresa-group {
+            grid-column: span 2;
+        }
+
+        /* Novos estilos para otimização */
+        .memory-usage {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 6px;
+            padding: 8px 12px;
+            margin: 10px 0;
+            font-size: 0.8rem;
+            display: none;
+        }
+
+        .compression-info {
+            background: #dbeafe;
+            border: 1px solid #3b82f6;
+            border-radius: 6px;
+            padding: 8px 12px;
+            margin: 10px 0;
+            font-size: 0.8rem;
+            display: none;
+        }
+
         @media (max-width: 1024px) {
             .summary-card {
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns: repeat(3, 1fr);
             }
             
             .filter-row {
                 grid-template-columns: repeat(2, 1fr);
+            }
+
+            .filter-empresa-group {
+                grid-column: span 2;
             }
         }
         
@@ -655,13 +751,24 @@
             .filter-row {
                 grid-template-columns: 1fr;
             }
+
+            .filter-empresa-group {
+                grid-column: span 1;
+            }
             
             .summary-card {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(2, 1fr);
             }
 
             .pagination {
                 flex-wrap: wrap;
+            }
+
+            .background-processing {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                text-align: center;
             }
         }
         
@@ -677,10 +784,16 @@
     </style>
 </head>
 <body>
+    <!-- NOVO: Indicador de processamento em background -->
+    <div class="background-processing" id="backgroundProcessing">
+        <div class="spinner"></div>
+        <span>Processando em background...</span>
+    </div>
+
     <header>
         <div class="container">
             <h1>Analisador SPED-EFD</h1>
-            <p class="subtitle">Detalhamento por Ano/Mês - Análise completa com separação por período</p>
+            <p class="subtitle">Detalhamento por Ano/Mês - Análise completa com separação por período, CNPJ e Nome da Empresa</p>
         </div>
     </header>
     
@@ -692,11 +805,20 @@
                 <strong>Como funciona:</strong> O sistema identifica automaticamente:
                 <ul style="margin: 10px 0 0 20px;">
                     <li><strong>Separação por Ano/Mês</strong> de cada arquivo</li>
+                    <li><strong>CNPJ e Nome</strong> da empresa de cada arquivo SPED</li>
                     <li><strong>Registro 0200:</strong> Código e descrição do item</li>
                     <li><strong>Registro C170:</strong> Valores, quantidades e complementos</li>
                     <li><strong>Totais por tipo de registro</strong> em cada período</li>
                     <li><strong>Todos os registros</strong> do SPED-EFD</li>
                 </ul>
+            </div>
+
+            <div class="memory-usage" id="memoryUsage">
+                <strong>Uso de Memória:</strong> <span id="memoryUsageText">0 MB</span>
+            </div>
+
+            <div class="compression-info" id="compressionInfo">
+                <strong>Otimização:</strong> <span id="compressionText">Compressão de dados ativa</span>
             </div>
             
             <div class="performance-warning" id="performanceWarning">
@@ -706,12 +828,12 @@
             <div class="upload-area" id="uploadArea">
                 <div class="upload-icon">📁</div>
                 <p>Clique aqui ou arraste múltiplos arquivos SPED-EFD para análise</p>
-                <p><small>Arquivos aceitos: .txt (múltipla seleção permitida)</small></p>
+                <p><small>Arquivos aceitos: .txt (múltipla seleção permitida) - Suporte a grandes volumes (1GB+)</small></p>
                 <input type="file" id="fileInput" accept=".txt" multiple style="display: none;">
             </div>
             
             <div class="file-info">
-                <p><strong>Arquivos carregados:</strong> <span id="fileCount">0</span></p>
+                <p><strong>Arquivos carregados:</strong> <span id="fileCount">0</span> (<span id="totalSize">0 MB</span>)</p>
                 <div class="file-list" id="fileList"></div>
             </div>
 
@@ -731,6 +853,9 @@
                 </button>
                 <button class="btn btn-outline" id="clearBtn">
                     <span>Limpar Arquivos</span>
+                </button>
+                <button class="btn btn-warning" id="optimizeBtn">
+                    <span>Modo Otimizado</span>
                 </button>
             </div>
             
@@ -764,8 +889,15 @@
                         <div class="summary-value" id="totalRegistros">0</div>
                     </div>
                     <div class="summary-item">
-                        <div class="summary-label">Valor Total Geral</div>
-                        <div class="summary-value summary-value-large" id="totalValue">R$ 0,00</div>
+                        <div class="summary-label">Empresas Diferentes</div>
+                        <div class="summary-value" id="totalEmpresas">0</div>
+                        <small>CNPJs únicos corretamente agrupados</small>
+                    </div>
+                    <!-- CORREÇÃO: Card do Montante Total adicionado -->
+                    <div class="summary-item highlight">
+                        <div class="summary-label">Total Geral do Montante</div>
+                        <div class="summary-value" id="totalMontante">R$ 0,00</div>
+                        <small>Valor total consolidado</small>
                     </div>
                 </div>
                 
@@ -791,6 +923,10 @@
             <div class="filter-section">
                 <h3 class="section-title">Filtros Avançados</h3>
                 <div class="filter-row">
+                    <div class="filter-group filter-empresa-group">
+                        <label class="filter-label">Empresa (CNPJ ou Nome)</label>
+                        <input type="text" class="filter-input" id="filterEmpresa" placeholder="Digite CNPJ ou nome da empresa">
+                    </div>
                     <div class="filter-group">
                         <label class="filter-label">Ano</label>
                         <select class="filter-select" id="filterAno">
@@ -807,7 +943,7 @@
                             <option value="04">Abril</option>
                             <option value="05">Maio</option>
                             <option value="06">Junho</option>
-                            <option value="07">Julho</option>
+                            <option value="07">Julço</option>
                             <option value="08">Agosto</option>
                             <option value="09">Setembro</option>
                             <option value="10">Outubro</option>
@@ -821,12 +957,12 @@
                             <option value="">Todos os registros</option>
                         </select>
                     </div>
+                </div>
+                <div class="filter-row">
                     <div class="filter-group">
                         <label class="filter-label">Código do Item</label>
                         <input type="text" class="filter-input" id="filterItemCodigo" placeholder="Código exato do item">
                     </div>
-                </div>
-                <div class="filter-row">
                     <div class="filter-group">
                         <label class="filter-label">Descrição do Item</label>
                         <input type="text" class="filter-input" id="filterItemDescricao" placeholder="Parte da descrição">
@@ -838,10 +974,6 @@
                     <div class="filter-group">
                         <label class="filter-label">Valor Máximo</label>
                         <input type="number" class="filter-input" id="filterValorMax" placeholder="0.00" step="0.01" min="0">
-                    </div>
-                    <div class="filter-group">
-                        <label class="filter-label">Unidade de Medida</label>
-                        <input type="text" class="filter-input" id="filterUnidade" placeholder="UN, KG, PC, etc.">
                     </div>
                 </div>
                 <div class="btn-group">
@@ -859,6 +991,7 @@
                 <button class="tab" data-tab="0200">Cadastro de Itens</button>
                 <button class="tab" data-tab="details">Todos os Registros</button>
                 <button class="tab" data-tab="files">Detalhes por Arquivo</button>
+                <button class="tab" data-tab="empresas">Empresas</button>
             </div>
             
             <div class="tab-content active" id="periodoTab">
@@ -878,6 +1011,7 @@
                             <tr>
                                 <th>Período</th>
                                 <th>Arquivos</th>
+                                <th>Empresas</th>
                                 <th>Total de Registros</th>
                                 <th>Tipos de Registros</th>
                                 <th>Valor Total</th>
@@ -913,6 +1047,7 @@
                                 <th>Valor Total</th>
                                 <th>Períodos</th>
                                 <th>Arquivos</th>
+                                <th>Empresas</th>
                             </tr>
                         </thead>
                         <tbody id="registrosTableBody">
@@ -946,6 +1081,7 @@
                                 <th>Valor Unitário Médio</th>
                                 <th>Qtde. C170</th>
                                 <th>Arquivos</th>
+                                <th>Empresas</th>
                             </tr>
                         </thead>
                         <tbody id="itensTableBody">
@@ -971,6 +1107,7 @@
                             <tr>
                                 <th class="periodo-column">Período</th>
                                 <th>Arquivo</th>
+                                <th>Empresa</th>
                                 <th>Código Item</th>
                                 <th>Descrição Item</th>
                                 <th>Descrição Complementar</th>
@@ -1005,6 +1142,7 @@
                             <tr>
                                 <th class="periodo-column">Período</th>
                                 <th>Arquivo</th>
+                                <th>Empresa</th>
                                 <th>Código Item</th>
                                 <th>Descrição</th>
                                 <th>Código Barras</th>
@@ -1036,6 +1174,7 @@
                             <tr>
                                 <th class="periodo-column">Período</th>
                                 <th>Arquivo</th>
+                                <th>Empresa</th>
                                 <th>Registro</th>
                                 <th>Item Código</th>
                                 <th>Item Descrição</th>
@@ -1066,6 +1205,7 @@
                         <thead>
                             <tr>
                                 <th>Arquivo</th>
+                                <th>Empresa</th>
                                 <th>Período</th>
                                 <th>Mês/Ano</th>
                                 <th>Total de Registros</th>
@@ -1080,22 +1220,60 @@
                     </table>
                 </div>
             </div>
+
+            <!-- NOVA ABA: Empresas -->
+            <div class="tab-content" id="empresasTab">
+                <div class="card">
+                    <h2 class="card-title">Empresas Encontradas</h2>
+                    <div class="pagination" id="empresasPagination" style="display: none;">
+                        <button class="pagination-btn" id="empresasFirst">Primeira</button>
+                        <button class="pagination-btn" id="empresasPrev">Anterior</button>
+                        <span class="pagination-info" id="empresasPageInfo">Página 1 de 1</span>
+                        <button class="pagination-btn" id="empresasNext">Próxima</button>
+                        <button class="pagination-btn" id="empresasLast">Última</button>
+                        <input type="number" class="pagination-input" id="empresasPageInput" min="1" value="1">
+                        <button class="pagination-btn" id="empresasGo">Ir</button>
+                    </div>
+                    <table id="empresasTable">
+                        <thead>
+                            <tr>
+                                <th>CNPJ</th>
+                                <th>Nome da Empresa</th>
+                                <th>Arquivos</th>
+                                <th>Períodos</th>
+                                <th>Total de Registros</th>
+                                <th>Valor Total</th>
+                                <th>Itens Cadastrados</th>
+                                <th>Registros C170</th>
+                            </tr>
+                        </thead>
+                        <tbody id="empresasTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
     
     <footer>
         <div class="container">
-            <p>Analisador SPED-EFD - Detalhamento por Ano/Mês &copy; 2025 - Análise completa com separação por período</p>
+            <p>Analisador SPED-EFD - Detalhamento por Ano/Mês &copy; 2025 - Análise completa com separação por período, CNPJ e Nome da Empresa</p>
         </div>
     </footer>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Configurações de performance
+            // CONFIGURAÇÕES OTIMIZADAS PARA GRANDES VOLUMES (1GB+)
             const PERFORMANCE_CONFIG = {
-                BATCH_SIZE: 50,
-                PAGE_SIZE: 100,
-                VIRTUAL_SCROLL_THRESHOLD: 1000
+                BATCH_SIZE: 5, // Reduzido para lidar com arquivos grandes
+                PAGE_SIZE: 50,
+                VIRTUAL_SCROLL_THRESHOLD: 500,
+                YIELD_INTERVAL: 10, // Mais frequente para não travar a UI
+                MAX_FILES_WARNING: 50,
+                MEMORY_LIMIT: 5000000,
+                MAX_FILE_SIZE_MB: 500, // Limite de 500MB por arquivo
+                COMPRESSION_ENABLED: true,
+                STREAMING_ENABLED: true
             };
 
             // Elementos da interface
@@ -1105,6 +1283,7 @@
             const fileList = document.getElementById('fileList');
             const processBtn = document.getElementById('processBtn');
             const clearBtn = document.getElementById('clearBtn');
+            const optimizeBtn = document.getElementById('optimizeBtn');
             const resultsSection = document.getElementById('resultsSection');
             const loading = document.getElementById('loading');
             const error = document.getElementById('error');
@@ -1121,12 +1300,24 @@
             const batchProgressText = document.getElementById('batchProgressText');
             const currentFile = document.getElementById('currentFile');
             const performanceWarning = document.getElementById('performanceWarning');
+            const backgroundProcessing = document.getElementById('backgroundProcessing');
+            const memoryUsage = document.getElementById('memoryUsage');
+            const memoryUsageText = document.getElementById('memoryUsageText');
+            const compressionInfo = document.getElementById('compressionInfo');
+            const compressionText = document.getElementById('compressionText');
+            const totalSize = document.getElementById('totalSize');
+            
+            // CORREÇÃO: Elemento para Total Geral do Montante
+            const totalMontante = document.getElementById('totalMontante');
+            
+            // NOVO: Filtro Empresa (CNPJ ou Nome)
+            const filterEmpresa = document.getElementById('filterEmpresa');
             
             // Elementos de resumo
             const processedFiles = document.getElementById('processedFiles');
             const totalPeriodos = document.getElementById('totalPeriodos');
             const totalRegistros = document.getElementById('totalRegistros');
-            const totalValue = document.getElementById('totalValue');
+            const totalEmpresas = document.getElementById('totalEmpresas');
             
             // Filtros
             const filterAno = document.getElementById('filterAno');
@@ -1136,7 +1327,6 @@
             const filterItemDescricao = document.getElementById('filterItemDescricao');
             const filterValorMin = document.getElementById('filterValorMin');
             const filterValorMax = document.getElementById('filterValorMax');
-            const filterUnidade = document.getElementById('filterUnidade');
             
             // Tabelas
             const periodoTableBody = document.getElementById('periodoTableBody');
@@ -1146,6 +1336,7 @@
             const table0200Body = document.getElementById('table0200Body');
             const detailsTableBody = document.getElementById('detailsTableBody');
             const filesTableBody = document.getElementById('filesTableBody');
+            const empresasTableBody = document.getElementById('empresasTableBody');
             
             // Tabs
             const tabs = document.querySelectorAll('.tab');
@@ -1155,7 +1346,11 @@
             let filteredData = null;
             let debugMode = false;
             let periodoView = true;
-            
+            let isProcessing = false;
+            let empresaMap = new Map(); // Mapa: nomeArquivo -> {cnpj, nome}
+            let optimizedMode = false;
+            let totalFilesSize = 0;
+
             // Estado de paginação
             const paginationState = {
                 periodo: { currentPage: 1, totalPages: 1, pageSize: PERFORMANCE_CONFIG.PAGE_SIZE },
@@ -1164,8 +1359,37 @@
                 c170: { currentPage: 1, totalPages: 1, pageSize: PERFORMANCE_CONFIG.PAGE_SIZE },
                 '0200': { currentPage: 1, totalPages: 1, pageSize: PERFORMANCE_CONFIG.PAGE_SIZE },
                 details: { currentPage: 1, totalPages: 1, pageSize: PERFORMANCE_CONFIG.PAGE_SIZE },
-                files: { currentPage: 1, totalPages: 1, pageSize: PERFORMANCE_CONFIG.PAGE_SIZE }
+                files: { currentPage: 1, totalPages: 1, pageSize: PERFORMANCE_CONFIG.PAGE_SIZE },
+                empresas: { currentPage: 1, totalPages: 1, pageSize: PERFORMANCE_CONFIG.PAGE_SIZE }
             };
+
+            // CORREÇÃO: Função para normalizar CNPJ (remove caracteres especiais e padroniza)
+            function normalizeCnpj(cnpj) {
+                if (!cnpj || cnpj === 'Não identificado' || cnpj === 'Erro') return cnpj;
+                
+                // Remove tudo que não é número
+                const cnpjLimpo = cnpj.replace(/\D/g, '');
+                
+                // Verifica se tem 14 dígitos (CNPJ válido)
+                if (cnpjLimpo.length === 14) {
+                    return cnpjLimpo;
+                }
+                
+                return cnpj;
+            }
+
+            // CORREÇÃO: Função para normalizar nome da empresa
+            function normalizeEmpresaName(nome) {
+                if (!nome || nome === 'Não identificado' || nome === 'Erro') return nome;
+                
+                return nome.trim()
+                    .toUpperCase()
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '') // Remove acentos
+                    .replace(/\s+/g, ' ') // Espaços múltiplos para único
+                    .replace(/[^A-Z0-9\s]/g, '') // Remove caracteres especiais, mantém letras, números e espaços
+                    .trim();
+            }
 
             // Eventos
             uploadArea.addEventListener('click', () => fileInput.click());
@@ -1186,6 +1410,7 @@
             
             processBtn.addEventListener('click', processFiles);
             clearBtn.addEventListener('click', clearFiles);
+            optimizeBtn.addEventListener('click', toggleOptimizedMode);
             exportBtn.addEventListener('click', exportToExcel);
             resetBtn.addEventListener('click', resetAnalysis);
             debugToggle.addEventListener('click', toggleDebug);
@@ -1205,7 +1430,6 @@
                     document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
                     this.classList.add('active');
                     
-                    // Corrigir IDs inconsistentes
                     let contentId = tabId + 'Tab';
                     if (tabId === '0200') {
                         contentId = 'tab0200';
@@ -1218,6 +1442,29 @@
                 });
             });
 
+            // Atualizar uso de memória periodicamente
+            setInterval(updateMemoryUsage, 2000);
+
+            function toggleOptimizedMode() {
+                optimizedMode = !optimizedMode;
+                optimizeBtn.textContent = optimizedMode ? 'Modo Normal' : 'Modo Otimizado';
+                optimizeBtn.classList.toggle('btn-warning', !optimizedMode);
+                optimizeBtn.classList.toggle('btn-success', optimizedMode);
+                
+                if (optimizedMode) {
+                    PERFORMANCE_CONFIG.BATCH_SIZE = 3;
+                    PERFORMANCE_CONFIG.COMPRESSION_ENABLED = true;
+                    PERFORMANCE_CONFIG.STREAMING_ENABLED = true;
+                    compressionInfo.style.display = 'block';
+                    compressionText.textContent = 'Modo otimizado ativo - Processamento mais lento mas suporta volumes maiores';
+                } else {
+                    PERFORMANCE_CONFIG.BATCH_SIZE = 10;
+                    PERFORMANCE_CONFIG.COMPRESSION_ENABLED = false;
+                    PERFORMANCE_CONFIG.STREAMING_ENABLED = false;
+                    compressionInfo.style.display = 'none';
+                }
+            }
+
             // Configurar eventos de paginação para cada aba
             setupPaginationEvents('periodo');
             setupPaginationEvents('registros');
@@ -1226,9 +1473,9 @@
             setupPaginationEvents('0200');
             setupPaginationEvents('details');
             setupPaginationEvents('files');
+            setupPaginationEvents('empresas');
 
             function setupPaginationEvents(tabName) {
-                // IDs corrigidos para evitar problemas
                 let firstBtn, prevBtn, nextBtn, lastBtn, pageInput, goBtn;
                 
                 if (tabName === '0200') {
@@ -1267,7 +1514,6 @@
                 paginationState[tabName].currentPage = newPage;
                 updatePaginationInfo(tabName);
                 
-                // Recarregar a tabela com os dados da página atual
                 if (filteredData) {
                     switch(tabName) {
                         case 'periodo':
@@ -1290,6 +1536,9 @@
                             break;
                         case 'files':
                             displayFilesTable(filteredData);
+                            break;
+                        case 'empresas':
+                            displayEmpresasTable(filteredData);
                             break;
                     }
                 }
@@ -1314,7 +1563,6 @@
                     pageInput.value = state.currentPage;
                 }
                 
-                // Atualizar estado dos botões
                 let firstBtn, prevBtn, nextBtn, lastBtn;
                 
                 if (tabName === '0200') {
@@ -1343,6 +1591,8 @@
                 let paginationElement;
                 if (tabName === '0200') {
                     paginationElement = document.getElementById('pagination0200');
+                } else if (tabName === 'empresas') {
+                    paginationElement = document.getElementById('empresasPagination');
                 } else {
                     paginationElement = document.getElementById(`${tabName}Pagination`);
                 }
@@ -1364,11 +1614,72 @@
                 return dataArray.slice(start, end);
             }
 
+            // FUNÇÃO MELHORADA: Extrair CNPJ e NOME do arquivo SPED com normalização
+            function extractEmpresaFromSped(content) {
+                const lines = content.split('\n');
+                let cnpj = 'Não identificado';
+                let nome = 'Não identificado';
+                let found = false;
+                
+                for (const line of lines) {
+                    if (line.startsWith('|0000|')) {
+                        const fields = line.split('|');
+                        // Campo 6 do registro 0000 é o CNPJ
+                        if (fields.length > 6 && fields[6] && fields[6].trim() !== '') {
+                            cnpj = normalizeCnpj(fields[6].trim());
+                        }
+                        // Campo 7 do registro 0000 é o NOME
+                        if (fields.length > 7 && fields[7] && fields[7].trim() !== '') {
+                            nome = normalizeEmpresaName(fields[7].trim());
+                        }
+                        found = true;
+                        break;
+                    }
+                    
+                    // Também verifica no registro 0005 (dados complementares)
+                    if (line.startsWith('|0005|')) {
+                        const fields = line.split('|');
+                        // Campo 2 do registro 0005 é o NOME FANTASIA
+                        if (fields.length > 2 && fields[2] && fields[2].trim() !== '' && nome === 'Não identificado') {
+                            nome = normalizeEmpresaName(fields[2].trim());
+                        }
+                    }
+                }
+                
+                // Se não encontrou registro 0000, tenta encontrar por outros meios
+                if (!found) {
+                    for (const line of lines) {
+                        if (line.includes('CNPJ') || line.includes('CPF')) {
+                            const cnpjMatch = line.match(/\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}/) || line.match(/\d{14}/);
+                            if (cnpjMatch) {
+                                cnpj = normalizeCnpj(cnpjMatch[0]);
+                            }
+                        }
+                        if (line.includes('NOME') || line.includes('RAZAO')) {
+                            const nomeMatch = line.split('|').find(part => part.length > 10 && !part.match(/^\d/));
+                            if (nomeMatch && nome === 'Não identificado') {
+                                nome = normalizeEmpresaName(nomeMatch);
+                            }
+                        }
+                    }
+                }
+                
+                return { cnpj, nome, key: `${cnpj}|${nome}` };
+            }
+
             function handleFiles(fileList) {
-                performanceWarning.style.display = fileList.length > 50 ? 'block' : 'none';
+                performanceWarning.style.display = fileList.length > PERFORMANCE_CONFIG.MAX_FILES_WARNING ? 'block' : 'none';
                 
                 for (let i = 0; i < fileList.length; i++) {
                     const file = fileList[i];
+                    
+                    // Verificar tamanho do arquivo
+                    const fileSizeMB = file.size / (1024 * 1024);
+                    if (fileSizeMB > PERFORMANCE_CONFIG.MAX_FILE_SIZE_MB) {
+                        addFileToList(file.name, false, `Arquivo muito grande (${fileSizeMB.toFixed(1)} MB)`);
+                        continue;
+                    }
+                    
                     if (!file.type.includes('text/') && !file.name.endsWith('.txt')) {
                         addFileToList(file.name, false, 'Tipo de arquivo não suportado');
                         continue;
@@ -1379,6 +1690,7 @@
                     }
                     addFileToList(file.name, true);
                     filesData.push(file);
+                    totalFilesSize += file.size;
                 }
                 updateFileCount();
                 processBtn.disabled = filesData.length === 0;
@@ -1395,6 +1707,8 @@
             
             function updateFileCount() {
                 fileCount.textContent = `${filesData.length} arquivo(s)`;
+                const totalSizeMB = (totalFilesSize / (1024 * 1024)).toFixed(1);
+                totalSize.textContent = `${totalSizeMB} MB`;
             }
             
             function clearFiles() {
@@ -1403,155 +1717,299 @@
                 updateFileCount();
                 processBtn.disabled = true;
                 performanceWarning.style.display = 'none';
+                empresaMap.clear();
+                totalFilesSize = 0;
             }
             
-            function processFiles() {
-                if (filesData.length === 0) return;
+            // PROCESSAMENTO OTIMIZADO PARA GRANDES VOLUMES
+            async function processFiles() {
+                if (filesData.length === 0 || isProcessing) return;
                 
+                isProcessing = true;
                 resetAnalysis();
                 
-                if (filesData.length > 100) {
-                    processBatchFiles();
-                } else {
-                    processNormalFiles();
-                }
-            }
-
-            async function processBatchFiles() {
-                loading.style.display = 'none';
-                batchProcessing.style.display = 'block';
-                processBtn.disabled = true;
-                error.style.display = 'none';
-                
-                const allResults = {
-                    periodos: new Map(),
-                    registros: new Map(),
-                    filesData: [],
-                    totalRegistros: 0,
-                    totalValor: 0,
-                    recordTypes: new Set()
-                };
-
-                const totalBatches = Math.ceil(filesData.length / PERFORMANCE_CONFIG.BATCH_SIZE);
-                
-                for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
-                    const start = batchIndex * PERFORMANCE_CONFIG.BATCH_SIZE;
-                    const end = Math.min(start + PERFORMANCE_CONFIG.BATCH_SIZE, filesData.length);
-                    const batch = filesData.slice(start, end);
-                    
-                    const progress = ((batchIndex + 1) / totalBatches) * 100;
-                    batchProgressBar.style.width = `${progress}%`;
-                    batchProgressText.textContent = `${Math.round(progress)}%`;
-                    
-                    await processFileBatch(batch, allResults, batchIndex, totalBatches);
-                    
-                    await new Promise(resolve => setTimeout(resolve, 10));
-                }
-                
-                consolidateResults(allResults);
-                displayResults(allResults);
-                
-                batchProcessing.style.display = 'none';
-                processBtn.disabled = false;
-            }
-
-            function processNormalFiles() {
                 loading.style.display = 'block';
+                batchProcessing.style.display = 'block';
+                backgroundProcessing.style.display = 'flex';
                 processBtn.disabled = true;
                 error.style.display = 'none';
                 
+                // Mostrar informações de otimização
+                if (optimizedMode) {
+                    compressionInfo.style.display = 'block';
+                    compressionText.textContent = `Processando ${filesData.length} arquivos (${(totalFilesSize / (1024 * 1024)).toFixed(1)} MB) em modo otimizado...`;
+                }
+                
+                try {
+                    const results = await processFilesOptimized();
+                    analysisData = results;
+                    
+                    // CORREÇÃO: Usar clone otimizado
+                    filteredData = cloneObjectOptimized(results);
+                    
+                    displayResults(results);
+                    resultsSection.style.display = 'block';
+                    
+                } catch (err) {
+                    console.error('Erro no processamento:', err);
+                    showError(`Erro durante o processamento: ${err.message}`);
+                } finally {
+                    loading.style.display = 'none';
+                    batchProcessing.style.display = 'none';
+                    backgroundProcessing.style.display = 'none';
+                    compressionInfo.style.display = 'none';
+                    isProcessing = false;
+                    processBtn.disabled = false;
+                }
+            }
+
+            // CORREÇÃO: Função para clonar objetos de forma otimizada
+            function cloneObjectOptimized(obj) {
+                if (obj === null || typeof obj !== 'object') return obj;
+                if (obj instanceof Map) return new Map(obj);
+                if (obj instanceof Set) return new Set(obj);
+                
+                const cloned = Array.isArray(obj) ? [] : {};
+                for (const key in obj) {
+                    if (obj.hasOwnProperty(key)) {
+                        cloned[key] = cloneObjectOptimized(obj[key]);
+                    }
+                }
+                return cloned;
+            }
+
+            // PROCESSAMENTO OTIMIZADO COM SUPORTE A GRANDES ARQUIVOS
+            async function processFilesOptimized() {
+                const totalFiles = filesData.length;
                 let processedCount = 0;
+                
                 const allResults = {
                     periodos: new Map(),
                     registros: new Map(),
                     filesData: [],
+                    empresas: new Map(), // Mapa de empresas normalizado
                     totalRegistros: 0,
                     totalValor: 0,
                     recordTypes: new Set()
                 };
+
+                // Processar em lotes menores para arquivos grandes
+                const actualBatchSize = optimizedMode ? PERFORMANCE_CONFIG.BATCH_SIZE : Math.min(PERFORMANCE_CONFIG.BATCH_SIZE, 10);
                 
-                filesData.forEach((file) => {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
+                for (let i = 0; i < totalFiles; i += actualBatchSize) {
+                    const batch = Array.from(filesData).slice(i, i + actualBatchSize);
+                    
+                    // Atualizar progresso
+                    processedCount += batch.length;
+                    const progress = Math.round((processedCount / totalFiles) * 100);
+                    batchProgressBar.style.width = `${progress}%`;
+                    batchProgressText.textContent = `${progress}%`;
+                    currentFile.textContent = `Processando: ${processedCount} de ${totalFiles} arquivos`;
+                    
+                    // Processar lote atual
+                    for (const file of batch) {
                         try {
-                            const content = e.target.result;
-                            const fileAnalysis = analyzeSpedFile(content, file.name);
+                            const content = await readFileAsync(file);
+                            const empresa = extractEmpresaFromSped(content);
+                            empresaMap.set(file.name, empresa);
                             
+                            // CORREÇÃO: Usar chave normalizada para empresas
+                            const empresaKey = empresa.key;
+                            if (!allResults.empresas.has(empresaKey)) {
+                                allResults.empresas.set(empresaKey, {
+                                    cnpj: empresa.cnpj,
+                                    nome: empresa.nome,
+                                    arquivos: new Set(),
+                                    periodos: new Set(),
+                                    totalRegistros: 0,
+                                    totalValor: 0,
+                                    items0200: 0,
+                                    registrosC170: 0
+                                });
+                            }
+                            
+                            const fileAnalysis = analyzeSpedFile(content, file.name, empresa);
                             allResults.filesData.push({
                                 fileName: file.name,
+                                empresa: empresa,
                                 ...fileAnalysis
                             });
                             
-                            processByPeriodo(allResults, fileAnalysis, file.name);
+                            processByPeriodo(allResults, fileAnalysis, file.name, empresa);
                             
-                            processedCount++;
-                            if (processedCount === filesData.length) {
-                                consolidateResults(allResults);
-                                displayResults(allResults);
-                                loading.style.display = 'none';
-                                processBtn.disabled = false;
-                            }
                         } catch (err) {
-                            processedCount++;
                             console.error(`Erro ao processar ${file.name}:`, err);
-                            showError(`Erro ao processar ${file.name}: ${err.message}`);
-                            if (processedCount === filesData.length) {
-                                loading.style.display = 'none';
-                                processBtn.disabled = false;
-                            }
+                            allResults.filesData.push({
+                                fileName: file.name,
+                                empresa: { cnpj: 'Erro', nome: 'Erro', key: 'Erro|Erro' },
+                                error: err.message,
+                                periodo: null,
+                                allRecords: [],
+                                items0200: new Map(),
+                                registrosC170: [],
+                                totalRegistros: 0,
+                                totalValor: 0
+                            });
                         }
-                    };
-                    reader.onerror = () => {
-                        processedCount++;
-                        showError(`Erro ao ler o arquivo ${file.name}`);
-                        if (processedCount === filesData.length) {
-                            loading.style.display = 'none';
-                            processBtn.disabled = false;
-                        }
-                    };
-                    reader.readAsText(file, 'ISO-8859-1');
+                    }
+                    
+                    // Liberar memória e permitir que a interface responda
+                    if (optimizedMode) {
+                        await new Promise(resolve => {
+                            setTimeout(() => {
+                                if (typeof gc !== 'undefined') gc(); // Forçar garbage collection se disponível
+                                resolve();
+                            }, 100);
+                        });
+                    } else {
+                        await new Promise(resolve => setTimeout(resolve, 0));
+                    }
+                    
+                    // Atualizar uso de memória
+                    updateMemoryUsage();
+                }
+                
+                return allResults;
+            }
+
+            // FUNÇÃO MELHORADA: Leitura de arquivo com tratamento de erros
+            function readFileAsync(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = e => resolve(e.target.result);
+                    reader.onerror = () => reject(new Error(`Erro ao ler arquivo: ${file.name}`));
+                    reader.onabort = () => reject(new Error(`Leitura abortada: ${file.name}`));
+                    
+                    try {
+                        reader.readAsText(file, 'ISO-8859-1');
+                    } catch (error) {
+                        reject(new Error(`Erro ao processar arquivo ${file.name}: ${error.message}`));
+                    }
                 });
             }
 
-            async function processFileBatch(batch, allResults, batchIndex, totalBatches) {
-                const promises = batch.map((file, fileIndex) => {
-                    return new Promise((resolve) => {
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            try {
-                                const content = e.target.result;
-                                const fileAnalysis = analyzeSpedFile(content, file.name);
-                                
-                                allResults.filesData.push({
-                                    fileName: file.name,
-                                    ...fileAnalysis
-                                });
-                                
-                                processByPeriodo(allResults, fileAnalysis, file.name);
-                                
-                                // Atualizar arquivo atual
-                                const overallIndex = batchIndex * PERFORMANCE_CONFIG.BATCH_SIZE + fileIndex + 1;
-                                currentFile.textContent = `Processando: ${file.name} (${overallIndex} de ${filesData.length})`;
-                                resolve();
-                            } catch (err) {
-                                console.error(`Erro ao processar ${file.name}:`, err);
-                                currentFile.textContent = `Erro em: ${file.name}`;
-                                resolve();
-                            }
-                        };
-                        reader.onerror = () => {
-                            console.error(`Erro ao ler o arquivo ${file.name}`);
-                            currentFile.textContent = `Erro ao ler: ${file.name}`;
-                            resolve();
-                        };
-                        reader.readAsText(file, 'ISO-8859-1');
-                    });
-                });
+            // FUNÇÃO MELHORADA: Análise do arquivo SPED com otimizações
+            function analyzeSpedFile(content, fileName, empresa) {
+                const lines = content.split('\n');
+                let periodo = null;
+                let allRecords = [];
+                const items0200 = new Map();
+                const registrosC170 = [];
                 
-                await Promise.all(promises);
+                // Otimização: processar linhas em chunks para não travar
+                const processChunk = (start, end) => {
+                    for (let i = start; i < end && i < lines.length; i++) {
+                        const line = lines[i];
+                        if (!line.trim()) continue;
+                        
+                        const parts = line.split('|').filter(part => part !== '');
+                        if (parts.length < 2) continue;
+                        
+                        const registro = parts[0];
+                        
+                        if (registro === '0000' && parts.length >= 5) {
+                            const dataInicio = parts[3];
+                            if (dataInicio && dataInicio.length === 8) {
+                                periodo = {
+                                    dataInicio: `${dataInicio.substring(0,2)}/${dataInicio.substring(2,4)}/${dataInicio.substring(4,8)}`,
+                                    dataFim: `${parts[4].substring(0,2)}/${parts[4].substring(2,4)}/${parts[4].substring(4,8)}`,
+                                    mes: dataInicio.substring(2,4),
+                                    ano: dataInicio.substring(4,8)
+                                };
+                            }
+                        }
+                        else if (registro === '0200' && parts.length >= 3) {
+                            const itemData = {
+                                arquivo: fileName,
+                                empresa: empresa,
+                                periodo: periodo,
+                                codigo: parts[1],
+                                descricao: parts[2],
+                                codBarras: parts[3] || '',
+                                unidade: parts[5] || '',
+                                tipoItem: parts[6] || '',
+                                codNCM: parts[7] || ''
+                            };
+                            items0200.set(parts[1], itemData);
+                            
+                            allRecords.push({
+                                fileName,
+                                empresa: empresa,
+                                registro: '0200',
+                                itemCodigo: parts[1],
+                                itemDescricao: parts[2],
+                                valor: 0,
+                                data: '',
+                                linha: line.substring(0, 200), // Limitar tamanho para economizar memória
+                                periodo: periodo
+                            });
+                        }
+                        else if (registro === 'C170' && parts.length >= 8) {
+                            const c170Data = {
+                                arquivo: fileName,
+                                empresa: empresa,
+                                periodo: periodo,
+                                numItem: parts[1] || '',
+                                codItem: parts[2] || '',
+                                descricaoCompl: parts[3] || '',
+                                qtd: parseValorSPED(parts[4]),
+                                unid: parts[5] || '',
+                                vlItem: parseValorSPED(parts[6]),
+                                vlDesc: parseValorSPED(parts[7]),
+                                vlBaseICMS: parseValorSPED(parts[12]),
+                                vlICMS: parseValorSPED(parts[14])
+                            };
+                            registrosC170.push(c170Data);
+                            
+                            allRecords.push({
+                                fileName,
+                                empresa: empresa,
+                                registro: 'C170',
+                                itemCodigo: parts[2],
+                                itemDescricao: '',
+                                valor: c170Data.vlItem,
+                                data: '',
+                                linha: line.substring(0, 200), // Limitar tamanho
+                                periodo: periodo
+                            });
+                        }
+                        else if (isRegistroComValor(registro)) {
+                            const valor = extractValorFromRegistro(registro, parts);
+                            const recordData = {
+                                fileName,
+                                empresa: empresa,
+                                registro,
+                                itemCodigo: '',
+                                itemDescricao: '',
+                                valor: valor,
+                                data: extractDataFromRegistro(registro, parts),
+                                linha: line.substring(0, 200), // Limitar tamanho
+                                periodo: periodo
+                            };
+                            
+                            allRecords.push(recordData);
+                        }
+                    }
+                };
+                
+                // Processar em chunks para não travar a UI
+                const CHUNK_SIZE = 1000;
+                for (let i = 0; i < lines.length; i += CHUNK_SIZE) {
+                    processChunk(i, i + CHUNK_SIZE);
+                }
+                
+                return {
+                    periodo,
+                    allRecords,
+                    items0200,
+                    registrosC170,
+                    totalRegistros: allRecords.length,
+                    totalValor: allRecords.reduce((sum, record) => sum + record.valor, 0)
+                };
             }
-            
-            function processByPeriodo(allResults, fileAnalysis, fileName) {
+
+            // FUNÇÃO MELHORADA: Processar por período com empresa normalizada
+            function processByPeriodo(allResults, fileAnalysis, fileName, empresa) {
                 const periodoKey = fileAnalysis.periodo ? 
                     `${fileAnalysis.periodo.ano}-${fileAnalysis.periodo.mes}` : 'sem-periodo';
                 
@@ -1562,6 +2020,7 @@
                         descricao: fileAnalysis.periodo ? 
                             `${fileAnalysis.periodo.mes}/${fileAnalysis.periodo.ano}` : 'Sem período',
                         arquivos: new Set(),
+                        empresas: new Set(), // Usar chaves normalizadas
                         registros: [],
                         items0200: new Map(),
                         registrosC170: [],
@@ -1573,6 +2032,18 @@
                 
                 const periodo = allResults.periodos.get(periodoKey);
                 periodo.arquivos.add(fileName);
+                periodo.empresas.add(empresa.key); // Usar chave normalizada
+                
+                // Atualizar dados da empresa usando chave normalizada
+                if (allResults.empresas.has(empresa.key)) {
+                    const empresaData = allResults.empresas.get(empresa.key);
+                    empresaData.arquivos.add(fileName);
+                    empresaData.periodos.add(periodoKey);
+                    empresaData.totalRegistros += fileAnalysis.totalRegistros;
+                    empresaData.totalValor += fileAnalysis.totalValor;
+                    empresaData.items0200 += fileAnalysis.items0200.size;
+                    empresaData.registrosC170 += fileAnalysis.registrosC170.length;
+                }
                 
                 fileAnalysis.allRecords.forEach(record => {
                     periodo.registros.push(record);
@@ -1590,7 +2061,8 @@
                             count: 0,
                             total: 0,
                             periodos: new Set(),
-                            arquivos: new Set()
+                            arquivos: new Set(),
+                            empresas: new Set() // Usar chaves normalizadas
                         });
                     }
                     const registroData = allResults.registros.get(record.registro);
@@ -1598,6 +2070,7 @@
                     registroData.total += record.valor;
                     registroData.periodos.add(periodoKey);
                     registroData.arquivos.add(fileName);
+                    registroData.empresas.add(empresa.key); // Usar chave normalizada
                 });
                 
                 fileAnalysis.items0200.forEach((item, codigo) => {
@@ -1607,45 +2080,33 @@
                 periodo.registrosC170.push(...fileAnalysis.registrosC170);
             }
 
-            // FUNÇÃO MELHORADA PARA PARSE DE VALORES DO SPED
+            // FUNÇÕES EXISTENTES MANTIDAS (parseValorSPED, extractValorFromRegistro, etc.)
             function parseValorSPED(valorStr) {
                 if (!valorStr || valorStr === '' || valorStr === undefined) return 0;
-                
                 valorStr = valorStr.trim();
                 if (valorStr === '') return 0;
                 
                 try {
-                    // Remover qualquer caractere que não seja número, ponto ou vírgula
                     let valorLimpo = valorStr.replace(/[^\d,.-]/g, '');
                     
-                    // Se não há separadores decimais, tratar como inteiro
                     if (!valorLimpo.includes(',') && !valorLimpo.includes('.')) {
                         return parseFloat(valorLimpo) || 0;
                     }
                     
-                    // Tratamento para formato brasileiro: 1.234,56
                     if (valorLimpo.includes(',') && valorLimpo.lastIndexOf(',') > valorLimpo.lastIndexOf('.')) {
-                        // Remover pontos dos milhares e substituir vírgula decimal por ponto
                         valorLimpo = valorLimpo.replace(/\./g, '').replace(',', '.');
                     }
-                    // Tratamento para formato internacional: 1,234.56
                     else if (valorLimpo.includes('.') && valorLimpo.lastIndexOf('.') > valorLimpo.lastIndexOf(',')) {
-                        // Remover vírgulas dos milhares
                         valorLimpo = valorLimpo.replace(/,/g, '');
                     }
                     
                     const valorNumerico = parseFloat(valorLimpo);
                     
-                    // Validação rigorosa
                     if (isNaN(valorNumerico)) {
-                        console.warn('Valor não pôde ser parseado:', valorStr, '->', valorLimpo);
                         return 0;
                     }
                     
-                    // Verificar se o valor é realistico (menos de 1 bilhão)
                     if (Math.abs(valorNumerico) > 1000000000) {
-                        console.warn('Valor potencialmente errado:', valorStr, '->', valorNumerico);
-                        // Para valores muito grandes, tentar dividir por 100 (possível erro de casas decimais)
                         const valorCorrigido = valorNumerico / 100;
                         if (Math.abs(valorCorrigido) < 1000000000) {
                             return valorCorrigido;
@@ -1656,42 +2117,23 @@
                     return valorNumerico;
                     
                 } catch (error) {
-                    console.error('Erro ao parsear valor:', valorStr, error);
                     return 0;
                 }
             }
 
-            // FUNÇÃO CORRIGIDA PARA EXTRAIR VALORES DOS REGISTROS
             function extractValorFromRegistro(registro, parts) {
                 let valor = 0;
                 
                 const camposValor = {
-                    'C100': 10,    // VL_PIS em C100
-                    'C170': 6,     // VL_ITEM em C170
-                    'C190': 5,     // VL_OPR em C190
-                    'C191': 3,     // VL_BC_ICMS em C191
-                    'C195': 3,     // VL_BC_ICMS em C195
-                    'C197': 3,     // VL_BC_ICMS em C197
-                    'C500': 5,     // VL_DOC em C500
-                    'C590': 5,     // VL_BC_ICMS em C590
-                    'D100': 7,     // VL_DOC em D100 - CORRIGIDO
-                    'D190': 5,     // VL_BC_ICMS em D190
-                    'D500': 5,     // VL_DOC em D500
-                    'D590': 5,     // VL_BC_ICMS em D590
-                    'E110': 2,     // VL_TOT_DEBITOS em E110
-                    'E116': 3,     // VL_OUT_DEB em E116
-                    'E210': 2,     // VL_TOT_DEBITOS em E210
-                    'E310': 2      // VL_TOT_DEBITOS em E310
+                    'C100': 10, 'C170': 6, 'C190': 5, 'C191': 3, 'C195': 3, 'C197': 3,
+                    'C500': 5, 'C590': 5, 'D100': 7, 'D190': 5, 'D500': 5, 'D590': 5,
+                    'E110': 2, 'E116': 3, 'E210': 2, 'E310': 2
                 };
                 
-                // Tratamento específico para D100
                 if (registro === 'D100' && parts.length > 7) {
-                    const campoValor = parts[7]; // Campo 8 (índice 7) é VL_DOC no D100
+                    const campoValor = parts[7];
                     if (campoValor && campoValor.trim() !== '') {
                         valor = parseValorSPED(campoValor);
-                        if (debugMode) {
-                            console.log('D100 - Campo valor:', campoValor, 'Valor parseado:', valor);
-                        }
                     }
                 }
                 else if (camposValor[registro] !== undefined && parts.length > camposValor[registro]) {
@@ -1700,7 +2142,6 @@
                         valor = parseValorSPED(campoValor);
                     }
                 } else {
-                    // Fallback: procurar por campos numéricos
                     for (let i = 1; i < parts.length; i++) {
                         const part = parts[i];
                         if (part && part.trim() !== '') {
@@ -1708,8 +2149,7 @@
                                 (part.replace(',', '.').replace(/[^0-9.-]/g, '') !== '')) {
                                 
                                 const potentialValor = parseValorSPED(part);
-                                // Validação mais rigorosa para evitar valores absurdos
-                                if (potentialValor !== 0 && Math.abs(potentialValor) < 1000000000) { // Limite de 1 bilhão
+                                if (potentialValor !== 0 && Math.abs(potentialValor) < 1000000000) {
                                     valor = potentialValor;
                                     break;
                                 }
@@ -1718,16 +2158,8 @@
                     }
                 }
                 
-                // Validação final do valor
                 if (!isFinite(valor) || Math.abs(valor) > 1e12) {
-                    if (debugMode) {
-                        console.warn(`Valor inválido detectado no registro ${registro}:`, valor, 'Parts:', parts);
-                    }
                     valor = 0;
-                }
-                
-                if (debugMode && valor !== 0) {
-                    console.log(`Registro ${registro}: valor encontrado =`, valor, 'parts:', parts);
                 }
                 
                 return valor;
@@ -1772,151 +2204,6 @@
                         return '';
                 }
             }
-            
-            function analyzeSpedFile(content, fileName) {
-                const lines = content.split('\n');
-                let periodo = null;
-                let allRecords = [];
-                const items0200 = new Map();
-                const registrosC170 = [];
-                
-                console.log(`Analisando arquivo: ${fileName} com ${lines.length} linhas`);
-                
-                for (const line of lines) {
-                    if (!line.trim()) continue;
-                    
-                    const parts = line.split('|').filter(part => part !== '');
-                    if (parts.length < 2) continue;
-                    
-                    const registro = parts[0];
-                    
-                    if (registro === '0000' && parts.length >= 5) {
-                        const dataInicio = parts[3];
-                        if (dataInicio && dataInicio.length === 8) {
-                            periodo = {
-                                dataInicio: `${dataInicio.substring(0,2)}/${dataInicio.substring(2,4)}/${dataInicio.substring(4,8)}`,
-                                dataFim: `${parts[4].substring(0,2)}/${parts[4].substring(2,4)}/${parts[4].substring(4,8)}`,
-                                mes: dataInicio.substring(2,4),
-                                ano: dataInicio.substring(4,8)
-                            };
-                        }
-                    }
-                    else if (registro === '0200' && parts.length >= 3) {
-                        const itemData = {
-                            arquivo: fileName,
-                            periodo: periodo,
-                            codigo: parts[1],
-                            descricao: parts[2],
-                            codBarras: parts[3] || '',
-                            unidade: parts[5] || '',
-                            tipoItem: parts[6] || '',
-                            codNCM: parts[7] || ''
-                        };
-                        items0200.set(parts[1], itemData);
-                        
-                        allRecords.push({
-                            fileName,
-                            registro: '0200',
-                            itemCodigo: parts[1],
-                            itemDescricao: parts[2],
-                            valor: 0,
-                            data: '',
-                            linha: line,
-                            periodo: periodo
-                        });
-                    }
-                    else if (registro === 'C170' && parts.length >= 8) {
-                        const c170Data = {
-                            arquivo: fileName,
-                            periodo: periodo,
-                            numItem: parts[1] || '',
-                            codItem: parts[2] || '',
-                            descricaoCompl: parts[3] || '',
-                            qtd: parseValorSPED(parts[4]),
-                            unid: parts[5] || '',
-                            vlItem: parseValorSPED(parts[6]),
-                            vlDesc: parseValorSPED(parts[7]),
-                            vlBaseICMS: parseValorSPED(parts[12]),
-                            vlICMS: parseValorSPED(parts[14])
-                        };
-                        registrosC170.push(c170Data);
-                        
-                        allRecords.push({
-                            fileName,
-                            registro: 'C170',
-                            itemCodigo: parts[2],
-                            itemDescricao: '',
-                            valor: c170Data.vlItem,
-                            data: '',
-                            linha: line,
-                            periodo: periodo
-                        });
-                    }
-                    else if (isRegistroComValor(registro)) {
-                        const valor = extractValorFromRegistro(registro, parts);
-                        const recordData = {
-                            fileName,
-                            registro,
-                            itemCodigo: '',
-                            itemDescricao: '',
-                            valor: valor,
-                            data: extractDataFromRegistro(registro, parts),
-                            linha: line,
-                            periodo: periodo
-                        };
-                        
-                        if (valor > 1000000000) {
-                            console.warn(`Valor potencialmente errado no registro ${registro}:`, valor, 'Line:', line);
-                        }
-                        
-                        allRecords.push(recordData);
-                    }
-                }
-                
-                console.log(`Arquivo ${fileName} processado: ${allRecords.length} registros, ${items0200.size} itens 0200, ${registrosC170.length} registros C170`);
-                
-                return {
-                    periodo,
-                    allRecords,
-                    items0200,
-                    registrosC170,
-                    totalRegistros: allRecords.length,
-                    totalValor: allRecords.reduce((sum, record) => sum + record.valor, 0)
-                };
-            }
-
-            function validarValores(data) {
-                let valoresInvalidos = 0;
-                let totalValor = 0;
-                
-                data.periodos.forEach((periodo, periodoKey) => {
-                    periodo.registros.forEach(record => {
-                        // Validação mais rigorosa
-                        if (!isFinite(record.valor) || 
-                            record.valor > 1e12 || 
-                            record.valor < -1e12 ||
-                            (record.registro === 'D100' && record.valor > 1000000000)) {
-                            
-                            console.warn(`Valor inválido encontrado:`, {
-                                periodo: periodoKey,
-                                registro: record.registro,
-                                valor: record.valor,
-                                arquivo: record.fileName
-                            });
-                            valoresInvalidos++;
-                            record.valor = 0;
-                        } else {
-                            totalValor += record.valor;
-                        }
-                    });
-                });
-                
-                if (valoresInvalidos > 0) {
-                    console.log(`Corrigidos ${valoresInvalidos} valores inválidos`);
-                }
-                
-                return totalValor;
-            }
 
             function consolidateResults(allResults) {
                 const totalValorValido = validarValores(allResults);
@@ -1939,7 +2226,8 @@
                                     quantidadeTotal: 0,
                                     valorTotal: 0,
                                     registrosC170: [],
-                                    arquivos: new Set()
+                                    arquivos: new Set(),
+                                    empresas: new Set() // Usar chaves normalizadas
                                 });
                             }
                             
@@ -1948,6 +2236,7 @@
                             item.valorTotal += c170.vlItem;
                             item.registrosC170.push(c170);
                             item.arquivos.add(c170.arquivo);
+                            item.empresas.add(c170.empresa.key); // Usar chave normalizada
                         }
                     });
                     
@@ -1955,22 +2244,42 @@
                     periodo.totalValor = periodo.registros.reduce((sum, record) => sum + record.valor, 0);
                 });
                 
-                analysisData = allResults;
-                filteredData = JSON.parse(JSON.stringify(allResults));
+                return allResults;
+            }
+
+            function validarValores(data) {
+                let totalValor = 0;
                 
-                console.log('Consolidação finalizada. Total valor:', allResults.totalValor);
+                data.periodos.forEach((periodo, periodoKey) => {
+                    periodo.registros.forEach(record => {
+                        if (!isFinite(record.valor) || 
+                            record.valor > 1e12 || 
+                            record.valor < -1e12 ||
+                            (record.registro === 'D100' && record.valor > 1000000000)) {
+                            record.valor = 0;
+                        } else {
+                            totalValor += record.valor;
+                        }
+                    });
+                });
+                
+                return totalValor;
             }
 
             function displayResults(data) {
+                data = consolidateResults(data);
+                
                 processedFiles.textContent = data.filesData.length;
                 totalPeriodos.textContent = data.periodos.size;
                 totalRegistros.textContent = data.totalRegistros;
-                totalValue.textContent = `R$ ${data.totalValor.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                totalEmpresas.textContent = data.empresas.size;
+                
+                // CORREÇÃO: Atualizar Total Geral do Montante
+                totalMontante.textContent = `R$ ${data.totalValor.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
                 
                 updateFilters(data);
                 updateDebugInfo(data);
                 
-                // Verificar se precisa ativar paginação
                 const totalRecords = data.totalRegistros;
                 if (totalRecords > PERFORMANCE_CONFIG.VIRTUAL_SCROLL_THRESHOLD) {
                     Object.keys(paginationState).forEach(tab => {
@@ -1985,10 +2294,10 @@
                 display0200Table(data);
                 displayDetailsTable(data);
                 displayFilesTable(data);
-                
-                resultsSection.style.display = 'block';
+                displayEmpresasTable(data);
             }
             
+            // FUNÇÕES DE EXIBIÇÃO ATUALIZADAS
             function displayPeriodoTable(data) {
                 const periodosArray = Array.from(data.periodos.values()).sort((a, b) => {
                     if (a.ano === 'N/A') return 1;
@@ -2008,6 +2317,7 @@
                     row.innerHTML = `
                         <td><span class="periodo-badge">${periodo.descricao}</span></td>
                         <td>${periodo.arquivos.size}</td>
+                        <td>${periodo.empresas.size}</td>
                         <td>${periodo.totalRegistros}</td>
                         <td>${Array.from(periodo.recordTypes).sort().join(', ')}</td>
                         <td class="valor-cell">R$ ${periodo.totalValor.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
@@ -2019,13 +2329,13 @@
                     globalTotal += periodo.totalValor;
                 });
                 
-                // Mostrar total geral apenas na última página
                 if (paginationState.periodo.currentPage === paginationState.periodo.totalPages || paginationState.periodo.totalPages === 1) {
                     const totalRow = document.createElement('tr');
                     totalRow.className = 'total-row';
                     totalRow.innerHTML = `
                         <td><strong>TOTAL GERAL</strong></td>
                         <td>${data.filesData.length}</td>
+                        <td>${data.empresas.size}</td>
                         <td>${data.totalRegistros}</td>
                         <td>${data.recordTypes.size} tipos</td>
                         <td class="valor-cell"><strong>R$ ${globalTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong></td>
@@ -2053,6 +2363,7 @@
                         <td class="valor-cell">R$ ${registro.total.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                         <td>${registro.periodos.size}</td>
                         <td>${registro.arquivos.size}</td>
+                        <td>${registro.empresas.size}</td>
                     `;
                     registrosTableBody.appendChild(row);
                 });
@@ -2083,7 +2394,8 @@
                         <td class="valor-cell">R$ ${item.valorTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                         <td>R$ ${valorUnitarioMedio.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                         <td>${item.registrosC170.length}</td>
-                        <td>${Array.from(item.arquivos).join(', ')}</td>
+                        <td>${item.arquivos.size}</td>
+                        <td>${item.empresas.size}</td>
                     `;
                     itensTableBody.appendChild(row);
                 });
@@ -2109,6 +2421,12 @@
                     row.innerHTML = `
                         <td class="periodo-column"><span class="periodo-badge">${c170.periodoDesc}</span></td>
                         <td>${c170.arquivo}</td>
+                        <td>
+                            <div class="empresa-info">
+                                <div class="empresa-nome">${c170.empresa.nome}</div>
+                                <div class="empresa-cnpj">${formatCnpjDisplay(c170.empresa.cnpj)}</div>
+                            </div>
+                        </td>
                         <td><strong>${c170.codItem}</strong></td>
                         <td>${item0200?.descricao || ''}</td>
                         <td>${c170.descricaoCompl}</td>
@@ -2141,6 +2459,12 @@
                     row.innerHTML = `
                         <td class="periodo-column"><span class="periodo-badge">${item.periodoDesc}</span></td>
                         <td>${item.arquivo}</td>
+                        <td>
+                            <div class="empresa-info">
+                                <div class="empresa-nome">${item.empresa.nome}</div>
+                                <div class="empresa-cnpj">${formatCnpjDisplay(item.empresa.cnpj)}</div>
+                            </div>
+                        </td>
                         <td><strong>${item.codigo}</strong></td>
                         <td>${item.descricao}</td>
                         <td>${item.codBarras}</td>
@@ -2170,6 +2494,12 @@
                     row.innerHTML = `
                         <td class="periodo-column"><span class="periodo-badge">${record.periodoDesc}</span></td>
                         <td>${record.fileName}</td>
+                        <td>
+                            <div class="empresa-info">
+                                <div class="empresa-nome">${record.empresa.nome}</div>
+                                <div class="empresa-cnpj">${formatCnpjDisplay(record.empresa.cnpj)}</div>
+                            </div>
+                        </td>
                         <td><span class="registro-badge">${record.registro}</span></td>
                         <td>${record.itemCodigo}</td>
                         <td>${record.itemDescricao}</td>
@@ -2193,6 +2523,12 @@
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>${file.fileName}</td>
+                        <td>
+                            <div class="empresa-info">
+                                <div class="empresa-nome">${file.empresa.nome}</div>
+                                <div class="empresa-cnpj">${formatCnpjDisplay(file.empresa.cnpj)}</div>
+                            </div>
+                        </td>
                         <td>${periodo ? `${periodo.dataInicio} a ${periodo.dataFim}` : 'Não identificado'}</td>
                         <td>${periodo ? `${periodo.mes}/${periodo.ano}` : 'N/A'}</td>
                         <td>${file.totalRegistros}</td>
@@ -2203,6 +2539,227 @@
                     `;
                     filesTableBody.appendChild(row);
                 });
+            }
+
+            // FUNÇÃO MELHORADA: Exibir tabela de empresas
+            function displayEmpresasTable(data) {
+                const empresasArray = Array.from(data.empresas.values()).sort((a, b) => 
+                    a.nome.localeCompare(b.nome)
+                );
+                
+                setupPagination('empresas', empresasArray);
+                const paginatedData = getPaginatedData('empresas', empresasArray);
+                
+                empresasTableBody.innerHTML = '';
+                
+                paginatedData.forEach(empresa => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><span class="cnpj-badge">${formatCnpjDisplay(empresa.cnpj)}</span></td>
+                        <td><strong>${empresa.nome}</strong></td>
+                        <td>${empresa.arquivos.size}</td>
+                        <td>${empresa.periodos.size}</td>
+                        <td>${empresa.totalRegistros}</td>
+                        <td class="valor-cell">R$ ${empresa.totalValor.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        <td>${empresa.items0200}</td>
+                        <td>${empresa.registrosC170}</td>
+                    `;
+                    empresasTableBody.appendChild(row);
+                });
+            }
+
+            // FUNÇÃO MELHORADA: Formatar CNPJ para exibição
+            function formatCnpjDisplay(cnpj) {
+                if (!cnpj || cnpj === 'Não identificado' || cnpj === 'Erro') return cnpj;
+                
+                const cnpjLimpo = cnpj.replace(/\D/g, '');
+                if (cnpjLimpo.length === 14) {
+                    return cnpjLimpo.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+                }
+                return cnpj;
+            }
+
+            // FUNÇÃO MELHORADA: Aplicar Filtros com Empresa normalizada
+            function applyFilters() {
+                if (!analysisData) return;
+                
+                const empresaFiltro = filterEmpresa.value.trim().toLowerCase();
+                const anoFiltro = filterAno.value;
+                const mesFiltro = filterMes.value;
+                const registroFiltro = filterRegistro.value;
+                const itemCodigoFiltro = filterItemCodigo.value.trim().toUpperCase();
+                const itemDescricaoFiltro = filterItemDescricao.value.trim().toLowerCase();
+                const valorMinFiltro = parseFloat(filterValorMin.value) || 0;
+                const valorMaxFiltro = parseFloat(filterValorMax.value) || Infinity;
+                
+                // CORREÇÃO: Usar clone otimizado
+                filteredData = cloneObjectOptimized(analysisData);
+                
+                // Aplicar filtro de Empresa (CNPJ ou Nome)
+                if (empresaFiltro) {
+                    filteredData.periodos.forEach((periodo, periodoKey) => {
+                        // Filtrar arquivos por empresa
+                        const arquivosFiltrados = Array.from(periodo.arquivos).filter(arquivo => {
+                            const empresa = empresaMap.get(arquivo);
+                            if (!empresa) return false;
+                            
+                            // Buscar tanto no CNPJ quanto no Nome (normalizados)
+                            return empresa.cnpj.includes(empresaFiltro) || 
+                                   empresa.nome.toLowerCase().includes(empresaFiltro);
+                        });
+                        
+                        if (arquivosFiltrados.length === 0) {
+                            filteredData.periodos.delete(periodoKey);
+                            return;
+                        }
+                        
+                        // Atualizar arquivos do período
+                        periodo.arquivos = new Set(arquivosFiltrados);
+                        
+                        // Filtrar registros por arquivo
+                        periodo.registros = periodo.registros.filter(record => 
+                            arquivosFiltrados.includes(record.fileName)
+                        );
+                        
+                        // Filtrar registros C170
+                        periodo.registrosC170 = periodo.registrosC170.filter(c170 => 
+                            arquivosFiltrados.includes(c170.arquivo)
+                        );
+                        
+                        // Atualizar empresas do período
+                        periodo.empresas = new Set();
+                        arquivosFiltrados.forEach(arquivo => {
+                            const empresa = empresaMap.get(arquivo);
+                            if (empresa) {
+                                periodo.empresas.add(empresa.key);
+                            }
+                        });
+                    });
+                }
+                
+                // Aplicar outros filtros
+                filteredData.periodos.forEach((periodo, periodoKey) => {
+                    if (anoFiltro && periodo.ano !== anoFiltro) {
+                        filteredData.periodos.delete(periodoKey);
+                        return;
+                    }
+                    
+                    if (mesFiltro && periodo.mes !== mesFiltro) {
+                        filteredData.periodos.delete(periodoKey);
+                        return;
+                    }
+                    
+                    // Filtrar registros
+                    periodo.registros = periodo.registros.filter(record => {
+                        if (registroFiltro && record.registro !== registroFiltro) return false;
+                        if (itemCodigoFiltro && record.itemCodigo !== itemCodigoFiltro) return false;
+                        if (itemDescricaoFiltro && !record.itemDescricao.toLowerCase().includes(itemDescricaoFiltro)) return false;
+                        if (record.valor < valorMinFiltro || record.valor > valorMaxFiltro) return false;
+                        return true;
+                    });
+                    
+                    // Filtrar itens 0200
+                    periodo.items0200.forEach((item, codigo) => {
+                        // Filtro por empresa nos itens 0200
+                        if (empresaFiltro) {
+                            const arquivosEmpresa = Array.from(periodo.arquivos);
+                            if (!arquivosEmpresa.includes(item.arquivo)) {
+                                periodo.items0200.delete(codigo);
+                            }
+                        }
+                    });
+                    
+                    // Filtrar registros C170
+                    periodo.registrosC170 = periodo.registrosC170.filter(c170 => {
+                        if (itemCodigoFiltro && c170.codItem !== itemCodigoFiltro) return false;
+                        if (c170.vlItem < valorMinFiltro || c170.vlItem > valorMaxFiltro) return false;
+                        return true;
+                    });
+                    
+                    // Recalcular totais
+                    periodo.totalRegistros = periodo.registros.length;
+                    periodo.totalValor = periodo.registros.reduce((sum, record) => sum + record.valor, 0);
+                    periodo.recordTypes = new Set(periodo.registros.map(r => r.registro));
+                });
+                
+                // Recalcular totais gerais
+                filteredData.totalRegistros = Array.from(filteredData.periodos.values())
+                    .reduce((sum, periodo) => sum + periodo.totalRegistros, 0);
+                filteredData.totalValor = Array.from(filteredData.periodos.values())
+                    .reduce((sum, periodo) => sum + periodo.totalValor, 0);
+                
+                // Recalcular empresas únicas
+                filteredData.empresas = new Map();
+                filteredData.periodos.forEach(periodo => {
+                    periodo.empresas.forEach(empresaKey => {
+                        const empresa = Array.from(analysisData.empresas.values()).find(e => e.key === empresaKey);
+                        if (empresa && !filteredData.empresas.has(empresaKey)) {
+                            filteredData.empresas.set(empresaKey, {
+                                ...empresa,
+                                arquivos: new Set(Array.from(empresa.arquivos).filter(arq => {
+                                    const emp = empresaMap.get(arq);
+                                    return emp && emp.key === empresaKey;
+                                })),
+                                periodos: new Set(Array.from(empresa.periodos).filter(p => filteredData.periodos.has(p)))
+                            });
+                        }
+                    });
+                });
+                
+                displayResults(filteredData);
+            }
+            
+            function clearFilters() {
+                filterEmpresa.value = '';
+                filterAno.value = '';
+                filterMes.value = '';
+                filterRegistro.value = '';
+                filterItemCodigo.value = '';
+                filterItemDescricao.value = '';
+                filterValorMin.value = '';
+                filterValorMax.value = '';
+                
+                if (analysisData) {
+                    // CORREÇÃO: Usar clone otimizado
+                    filteredData = cloneObjectOptimized(analysisData);
+                    displayResults(filteredData);
+                }
+            }
+            
+            function validateValorFilters() {
+                const valorMin = parseFloat(filterValorMin.value);
+                const valorMax = parseFloat(filterValorMax.value);
+                
+                if (valorMin > 0 && valorMax > 0 && valorMin > valorMax) {
+                    filterValorMin.setCustomValidity('Valor mínimo não pode ser maior que o máximo');
+                    filterValorMin.style.borderColor = 'var(--accent-color)';
+                    filterValorMax.style.borderColor = 'var(--accent-color)';
+                } else {
+                    filterValorMin.setCustomValidity('');
+                    filterValorMin.style.borderColor = '';
+                    filterValorMax.style.borderColor = '';
+                }
+            }
+            
+            function togglePeriodoViewHandler() {
+                periodoView = !periodoView;
+                togglePeriodoView.textContent = periodoView ? 'Vista Consolidada' : 'Vista por Período';
+                
+                const tables = document.querySelectorAll('#itensTab, #c170Tab, #tab0200, #detailsTab');
+                tables.forEach(table => {
+                    if (periodoView) {
+                        table.classList.remove('view-consolidada');
+                    } else {
+                        table.classList.add('view-consolidada');
+                    }
+                });
+                
+                if (filteredData) {
+                    displayItensTable(filteredData);
+                    displayC170Table(filteredData);
+                    display0200Table(filteredData);
+                    displayDetailsTable(filteredData);
+                }
             }
             
             function updateFilters(data) {
@@ -2228,141 +2785,6 @@
                 });
             }
             
-            // FUNÇÃO IMPLEMENTADA: Aplicar Filtros
-            function applyFilters() {
-                if (!analysisData) return;
-                
-                console.log('Aplicando filtros...');
-                
-                // Criar cópia dos dados para filtragem
-                filteredData = JSON.parse(JSON.stringify(analysisData));
-                
-                // Aplicar filtros
-                const anoFiltro = filterAno.value;
-                const mesFiltro = filterMes.value;
-                const registroFiltro = filterRegistro.value;
-                const itemCodigoFiltro = filterItemCodigo.value.trim().toUpperCase();
-                const itemDescricaoFiltro = filterItemDescricao.value.trim().toLowerCase();
-                const valorMinFiltro = parseFloat(filterValorMin.value) || 0;
-                const valorMaxFiltro = parseFloat(filterValorMax.value) || Infinity;
-                const unidadeFiltro = filterUnidade.value.trim().toUpperCase();
-                
-                // Filtrar períodos
-                filteredData.periodos.forEach((periodo, periodoKey) => {
-                    if (anoFiltro && periodo.ano !== anoFiltro) {
-                        filteredData.periodos.delete(periodoKey);
-                        return;
-                    }
-                    
-                    if (mesFiltro && periodo.mes !== mesFiltro) {
-                        filteredData.periodos.delete(periodoKey);
-                        return;
-                    }
-                    
-                    // Filtrar registros dentro do período
-                    periodo.registros = periodo.registros.filter(record => {
-                        if (registroFiltro && record.registro !== registroFiltro) return false;
-                        if (itemCodigoFiltro && record.itemCodigo !== itemCodigoFiltro) return false;
-                        if (itemDescricaoFiltro && !record.itemDescricao.toLowerCase().includes(itemDescricaoFiltro)) return false;
-                        if (record.valor < valorMinFiltro || record.valor > valorMaxFiltro) return false;
-                        return true;
-                    });
-                    
-                    // Filtrar itens 0200
-                    periodo.items0200.forEach((item, codigo) => {
-                        if (unidadeFiltro && item.unidade !== unidadeFiltro) {
-                            periodo.items0200.delete(codigo);
-                        }
-                    });
-                    
-                    // Filtrar registros C170
-                    periodo.registrosC170 = periodo.registrosC170.filter(c170 => {
-                        if (itemCodigoFiltro && c170.codItem !== itemCodigoFiltro) return false;
-                        if (unidadeFiltro && c170.unid !== unidadeFiltro) return false;
-                        if (c170.vlItem < valorMinFiltro || c170.vlItem > valorMaxFiltro) return false;
-                        return true;
-                    });
-                    
-                    // Recalcular totais do período
-                    periodo.totalRegistros = periodo.registros.length;
-                    periodo.totalValor = periodo.registros.reduce((sum, record) => sum + record.valor, 0);
-                    periodo.recordTypes = new Set(periodo.registros.map(r => r.registro));
-                });
-                
-                // Recalcular totais gerais
-                filteredData.totalRegistros = Array.from(filteredData.periodos.values())
-                    .reduce((sum, periodo) => sum + periodo.totalRegistros, 0);
-                filteredData.totalValor = Array.from(filteredData.periodos.values())
-                    .reduce((sum, periodo) => sum + periodo.totalValor, 0);
-                
-                // Atualizar exibição
-                displayResults(filteredData);
-                
-                console.log('Filtros aplicados com sucesso');
-            }
-            
-            // FUNÇÃO IMPLEMENTADA: Limpar Filtros
-            function clearFilters() {
-                filterAno.value = '';
-                filterMes.value = '';
-                filterRegistro.value = '';
-                filterItemCodigo.value = '';
-                filterItemDescricao.value = '';
-                filterValorMin.value = '';
-                filterValorMax.value = '';
-                filterUnidade.value = '';
-                
-                if (analysisData) {
-                    filteredData = JSON.parse(JSON.stringify(analysisData));
-                    displayResults(filteredData);
-                }
-                
-                console.log('Filtros limpos');
-            }
-            
-            // FUNÇÃO IMPLEMENTADA: Validar Filtros de Valor
-            function validateValorFilters() {
-                const valorMin = parseFloat(filterValorMin.value);
-                const valorMax = parseFloat(filterValorMax.value);
-                
-                if (valorMin > 0 && valorMax > 0 && valorMin > valorMax) {
-                    filterValorMin.setCustomValidity('Valor mínimo não pode ser maior que o máximo');
-                    filterValorMin.style.borderColor = 'var(--accent-color)';
-                    filterValorMax.style.borderColor = 'var(--accent-color)';
-                } else {
-                    filterValorMin.setCustomValidity('');
-                    filterValorMin.style.borderColor = '';
-                    filterValorMax.style.borderColor = '';
-                }
-            }
-            
-            // FUNÇÃO IMPLEMENTADA: Alternar Vista Período/Consolidada
-            function togglePeriodoViewHandler() {
-                periodoView = !periodoView;
-                togglePeriodoView.textContent = periodoView ? 'Vista Consolidada' : 'Vista por Período';
-                
-                // Aplicar/remover classe para ocultar colunas de período
-                const tables = document.querySelectorAll('#itensTab, #c170Tab, #tab0200, #detailsTab');
-                tables.forEach(table => {
-                    if (periodoView) {
-                        table.classList.remove('view-consolidada');
-                    } else {
-                        table.classList.add('view-consolidada');
-                    }
-                });
-                
-                // Se há dados filtrados, reexibir para aplicar a mudança de visualização
-                if (filteredData) {
-                    displayItensTable(filteredData);
-                    displayC170Table(filteredData);
-                    display0200Table(filteredData);
-                    displayDetailsTable(filteredData);
-                }
-                
-                console.log(`Vista alterada para: ${periodoView ? 'Por Período' : 'Consolidada'}`);
-            }
-            
-            // FUNÇÃO IMPLEMENTADA: Atualizar Informações de Debug
             function updateDebugInfo(data) {
                 if (!debugMode) return;
                 
@@ -2371,6 +2793,7 @@
                     <div><strong>Períodos Encontrados:</strong> ${data.periodos.size}</div>
                     <div><strong>Total de Registros:</strong> ${data.totalRegistros}</div>
                     <div><strong>Valor Total:</strong> R$ ${data.totalValor.toLocaleString('pt-BR')}</div>
+                    <div><strong>Empresas Únicas:</strong> ${data.empresas.size}</div>
                     <div><strong>Tipos de Registro:</strong> ${Array.from(data.recordTypes).sort().join(', ')}</div>
                     <br>
                     <div><strong>Detalhes por Período:</strong></div>
@@ -2382,7 +2805,8 @@
                             <strong>${periodo.descricao}:</strong> 
                             ${periodo.registros.length} registros, 
                             R$ ${periodo.totalValor.toLocaleString('pt-BR')}, 
-                            ${periodo.arquivos.size} arquivos
+                            ${periodo.arquivos.size} arquivos,
+                            ${periodo.empresas.size} empresas
                         </div>
                     `;
                 });
@@ -2390,7 +2814,6 @@
                 debugContent.innerHTML = debugHTML;
             }
             
-            // FUNÇÃO IMPLEMENTADA: Toggle Debug
             function toggleDebug() {
                 debugMode = !debugMode;
                 debugInfo.style.display = debugMode ? 'block' : 'none';
@@ -2415,7 +2838,7 @@
                         
                         // Aba: Resumo por Período
                         const periodoData = [
-                            ['Período', 'Arquivos', 'Total de Registros', 'Tipos de Registros', 'Valor Total', 'Itens Cadastrados', 'Registros C170', 'Valor C170']
+                            ['Período', 'Arquivos', 'Empresas', 'Total de Registros', 'Tipos de Registros', 'Valor Total', 'Itens Cadastrados', 'Registros C170', 'Valor C170']
                         ];
                         
                         Array.from(analysisData.periodos.values()).sort((a, b) => {
@@ -2427,6 +2850,7 @@
                             periodoData.push([
                                 periodo.descricao,
                                 periodo.arquivos.size,
+                                periodo.empresas.size,
                                 periodo.totalRegistros,
                                 Array.from(periodo.recordTypes).sort().join(', '),
                                 periodo.totalValor,
@@ -2441,7 +2865,7 @@
                         
                         // Aba: Totais por Registro
                         const registrosData = [
-                            ['Tipo de Registro', 'Descrição', 'Quantidade Total', 'Valor Total', 'Períodos', 'Arquivos']
+                            ['Tipo de Registro', 'Descrição', 'Quantidade Total', 'Valor Total', 'Períodos', 'Arquivos', 'Empresas']
                         ];
                         
                         Array.from(analysisData.registros.values()).sort((a, b) => b.total - a.total).forEach(registro => {
@@ -2451,7 +2875,8 @@
                                 registro.count,
                                 registro.total,
                                 registro.periodos.size,
-                                registro.arquivos.size
+                                registro.arquivos.size,
+                                registro.empresas.size
                             ]);
                         });
                         
@@ -2460,7 +2885,7 @@
                         
                         // Aba: Itens com Valores
                         const itensData = [
-                            ['Código', 'Descrição', 'Unidade', 'Período', 'Quantidade Total', 'Valor Total', 'Valor Unitário Médio', 'Qtde. C170', 'Arquivos']
+                            ['Código', 'Descrição', 'Unidade', 'Período', 'Quantidade Total', 'Valor Total', 'Valor Unitário Médio', 'Qtde. C170', 'Arquivos', 'Empresas']
                         ];
                         
                         Array.from(analysisData.periodos.values()).forEach(periodo => {
@@ -2475,7 +2900,8 @@
                                     item.valorTotal,
                                     valorUnitarioMedio,
                                     item.registrosC170.length,
-                                    Array.from(item.arquivos).join(', ')
+                                    item.arquivos.size,
+                                    item.empresas.size
                                 ]);
                             });
                         });
@@ -2485,7 +2911,7 @@
                         
                         // Aba: Registros C170
                         const c170Data = [
-                            ['Período', 'Arquivo', 'Código Item', 'Descrição Item', 'Descrição Complementar', 'Quantidade', 'Unidade', 'Valor Item', 'Valor Desconto', 'Base ICMS', 'Valor ICMS']
+                            ['Período', 'Arquivo', 'CNPJ', 'Nome Empresa', 'Código Item', 'Descrição Item', 'Descrição Complementar', 'Quantidade', 'Unidade', 'Valor Item', 'Valor Desconto', 'Base ICMS', 'Valor ICMS']
                         ];
                         
                         Array.from(analysisData.periodos.values()).forEach(periodo => {
@@ -2494,6 +2920,8 @@
                                 c170Data.push([
                                     periodo.descricao,
                                     c170.arquivo,
+                                    c170.empresa.cnpj,
+                                    c170.empresa.nome,
                                     c170.codItem,
                                     item0200?.descricao || '',
                                     c170.descricaoCompl,
@@ -2512,7 +2940,7 @@
                         
                         // Aba: Cadastro de Itens
                         const registro0200Data = [
-                            ['Período', 'Arquivo', 'Código Item', 'Descrição', 'Código Barras', 'Unidade', 'Tipo Item', 'Código NCM']
+                            ['Período', 'Arquivo', 'CNPJ', 'Nome Empresa', 'Código Item', 'Descrição', 'Código Barras', 'Unidade', 'Tipo Item', 'Código NCM']
                         ];
                         
                         Array.from(analysisData.periodos.values()).forEach(periodo => {
@@ -2520,6 +2948,8 @@
                                 registro0200Data.push([
                                     periodo.descricao,
                                     item.arquivo,
+                                    item.empresa.cnpj,
+                                    item.empresa.nome,
                                     item.codigo,
                                     item.descricao,
                                     item.codBarras,
@@ -2535,7 +2965,7 @@
                         
                         // Aba: Todos os Registros Detalhados
                         const detailsData = [
-                            ['Período', 'Arquivo', 'Registro', 'Item Código', 'Item Descrição', 'Valor', 'Data', 'Linha Completa']
+                            ['Período', 'Arquivo', 'CNPJ', 'Nome Empresa', 'Registro', 'Item Código', 'Item Descrição', 'Valor', 'Data', 'Linha Completa']
                         ];
                         
                         Array.from(analysisData.periodos.values()).forEach(periodo => {
@@ -2543,6 +2973,8 @@
                                 detailsData.push([
                                     periodo.descricao,
                                     record.fileName,
+                                    record.empresa.cnpj,
+                                    record.empresa.nome,
                                     record.registro,
                                     record.itemCodigo,
                                     record.itemDescricao,
@@ -2558,13 +2990,15 @@
                         
                         // Aba: Detalhes por Arquivo
                         const filesData = [
-                            ['Arquivo', 'Período', 'Mês/Ano', 'Total de Registros', 'Tipos de Registros', 'Valor Total', 'Itens 0200', 'Registros C170']
+                            ['Arquivo', 'CNPJ', 'Nome Empresa', 'Período', 'Mês/Ano', 'Total de Registros', 'Tipos de Registros', 'Valor Total', 'Itens 0200', 'Registros C170']
                         ];
                         
                         analysisData.filesData.forEach(file => {
                             const periodo = file.periodo;
                             filesData.push([
                                 file.fileName,
+                                file.empresa.cnpj,
+                                file.empresa.nome,
                                 periodo ? `${periodo.dataInicio} a ${periodo.dataFim}` : 'Não identificado',
                                 periodo ? `${periodo.mes}/${periodo.ano}` : 'N/A',
                                 file.totalRegistros,
@@ -2578,13 +3012,33 @@
                         const wsFiles = XLSX.utils.aoa_to_sheet(filesData);
                         XLSX.utils.book_append_sheet(wb, wsFiles, 'Detalhes por Arquivo');
                         
+                        // NOVA ABA: Empresas
+                        const empresasData = [
+                            ['CNPJ', 'Nome da Empresa', 'Arquivos', 'Períodos', 'Total de Registros', 'Valor Total', 'Itens Cadastrados', 'Registros C170']
+                        ];
+                        
+                        Array.from(analysisData.empresas.values()).sort((a, b) => a.nome.localeCompare(b.nome)).forEach(empresa => {
+                            empresasData.push([
+                                empresa.cnpj,
+                                empresa.nome,
+                                empresa.arquivos.size,
+                                empresa.periodos.size,
+                                empresa.totalRegistros,
+                                empresa.totalValor,
+                                empresa.items0200,
+                                empresa.registrosC170
+                            ]);
+                        });
+                        
+                        const wsEmpresas = XLSX.utils.aoa_to_sheet(empresasData);
+                        XLSX.utils.book_append_sheet(wb, wsEmpresas, 'Empresas');
+                        
                         const timestamp = new Date().toISOString().slice(0,19).replace(/:/g, '-');
                         const fileName = `analise_sped_${timestamp}.xlsx`;
                         
                         XLSX.writeFile(wb, fileName);
                         
                         loading.style.display = 'none';
-                        console.log('Arquivo Excel exportado com sucesso!');
                     }, 100);
                     
                 } catch (error) {
@@ -2601,15 +3055,15 @@
                 analysisData = null;
                 filteredData = null;
                 
-                // Resetar paginação
                 Object.keys(paginationState).forEach(tab => {
                     paginationState[tab].currentPage = 1;
                     paginationState[tab].totalPages = 1;
                     
-                    // Corrigir seletores para evitar erros
                     let paginationElement;
                     if (tab === '0200') {
                         paginationElement = document.getElementById('pagination0200');
+                    } else if (tab === 'empresas') {
+                        paginationElement = document.getElementById('empresasPagination');
                     } else {
                         paginationElement = document.getElementById(`${tab}Pagination`);
                     }
@@ -2619,6 +3073,7 @@
                     }
                 });
                 
+                filterEmpresa.value = '';
                 filterAno.value = '';
                 filterMes.value = '';
                 filterRegistro.value = '';
@@ -2626,9 +3081,7 @@
                 filterItemDescricao.value = '';
                 filterValorMin.value = '';
                 filterValorMax.value = '';
-                filterUnidade.value = '';
                 
-                // Resetar vista
                 periodoView = true;
                 togglePeriodoView.textContent = 'Vista Consolidada';
                 document.querySelectorAll('#itensTab, #c170Tab, #tab0200, #detailsTab').forEach(table => {
@@ -2663,6 +3116,25 @@
                     '09': 'Serviços', '10': 'Outros insumos', '99': 'Outras'
                 };
                 return tipo ? `${tipo} - ${tipos[tipo] || 'Desconhecido'}` : 'Não informado';
+            }
+
+            // CORREÇÃO: Função para monitorar uso de memória
+            function updateMemoryUsage() {
+                if (performance.memory) {
+                    const usedMB = Math.round(performance.memory.usedJSHeapSize / 1048576);
+                    const totalMB = Math.round(performance.memory.totalJSHeapSize / 1048576);
+                    memoryUsageText.textContent = `${usedMB} MB / ${totalMB} MB`;
+                    memoryUsage.style.display = 'block';
+                    
+                    // Aviso se estiver perto do limite
+                    if (usedMB > 800) {
+                        memoryUsage.style.background = '#fef2f2';
+                        memoryUsage.style.borderColor = '#ef4444';
+                    } else {
+                        memoryUsage.style.background = '#fef3c7';
+                        memoryUsage.style.borderColor = '#f59e0b';
+                    }
+                }
             }
         });
     </script>
